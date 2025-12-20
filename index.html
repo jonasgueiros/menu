@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Catalog</title>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">🍽️</div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-page="inicio">
+                    <span class="icon">🏠</span>
+                </button>
+                <button class="nav-btn" data-page="petiscos">
+                    <span class="icon">🥘</span>
+                </button>
+                <button class="nav-btn" data-page="lanches">
+                    <span class="icon">🥗</span>
+                </button>
+                <button class="nav-btn" data-page="doces">
+                    <span class="icon">🍰</span>
+                </button>
+                <button class="nav-btn" data-page="drinks">
+                    <span class="icon">🍷</span>
+                </button>
+                <button class="nav-btn" data-page="feedback">
+                    <span class="icon">💬</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Inicio Page -->
+            <section class="page active" id="inicio-page">
+                <header class="page-header">
+                    <h1>Bem-vindo</h1>
+                </header>
+
+                <div class="sections-container">
+                    <!-- Mais Pedidos Section -->
+                    <section class="category-section">
+                        <h2>📈 Mais Pedidos</h2>
+                        <div class="menu-grid" id="maispedidosGrid"></div>
+                    </section>
+
+                    <!-- Promoção Section -->
+                    <section class="category-section">
+                        <h2>🏷️ Promoção</h2>
+                        <div class="menu-grid" id="promocaoGrid"></div>
+                    </section>
+
+                    <!-- Combos Section -->
+                    <section class="category-section">
+                        <h2>🎁 Combos</h2>
+                        <div class="menu-grid" id="combosGrid"></div>
+                    </section>
+                </div>
+            </section>
+
+            <!-- Petiscos Page -->
+            <section class="page" id="petiscos-page">
+                <header class="page-header">
+                    <h1>Petiscos</h1>
+                </header>
+                <div class="menu-grid" id="petiscosGrid"></div>
+            </section>
+
+            <!-- Lanches Page -->
+            <section class="page" id="lanches-page">
+                <header class="page-header">
+                    <h1>Lanches</h1>
+                </header>
+                <div class="menu-grid" id="lanchesGrid"></div>
+            </section>
+
+            <!-- Doces Page -->
+            <section class="page" id="doces-page">
+                <header class="page-header">
+                    <h1>Doces</h1>
+                </header>
+                <div class="menu-grid" id="docesGrid"></div>
+            </section>
+
+            <!-- Drinks Page -->
+            <section class="page" id="drinks-page">
+                <header class="page-header">
+                    <h1>Bebidas</h1>
+                </header>
+                <div class="menu-grid" id="drinksGrid"></div>
+            </section>
+
+            <!-- Feedback Page -->
+            <section class="page" id="feedback-page">
+                <header class="page-header">
+                    <h1>Feedback</h1>
+                </header>
+                <form class="feedback-form">
+                    <div class="feedback-type">
+                        <label>Seu feedback é sobre:</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="feedbackType" value="restaurante" required>
+                                <span>🍽️ Restaurante</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="feedbackType" value="sistema" required>
+                                <span>💻 Sistema</span>
+                            </label>
+                        </div>
+                    </div>
+                    <textarea placeholder="Deixe seu comentário..." rows="5" required></textarea>
+                    <input type="email" placeholder="Seu email (opcional)">
+                    <button type="submit" class="submit-btn">Enviar Feedback</button>
+                </form>
+            </section>
+
+            <!-- Sobre Page (loaded from fragment) -->
+            <section class="page" id="sobre-page">
+                <!-- Conteúdo será carregado dinamicamente de html/sobre.html -->
+            </section>
+        </main>
+    </div>
+
+    <!-- Cart Preview Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content cart-modal-content">
+            <div class="modal-header">
+                <h2>🛒 Itens do Carrinho</h2>
+                <span class="modal-close" onclick="closeCartModal()">&times;</span>
+            </div>
+            <div class="cart-items-list" id="cartItemsList">
+                <!-- Items will be populated here -->
+            </div>
+            <div class="cart-modal-footer">
+                <div class="cart-modal-total">
+                    Total: <span id="cartModalTotal">R$ 0,00</span>
+                </div>
+                <button class="btn-cancel" onclick="closeCartModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h2>Forma de Pagamento</h2>
+                <span class="modal-close" onclick="closePaymentModal()">&times;</span>
+            </div>
+            <p>Como o cliente deseja pagar?</p>
+            <div class="payment-options">
+                <button class="payment-btn" data-method="dinheiro">
+                    <span class="payment-icon">💵</span>
+                    <span>Dinheiro</span>
+                </button>
+                <button class="payment-btn" data-method="credito">
+                    <span class="payment-icon">💳</span>
+                    <span>Crédito</span>
+                </button>
+                <button class="payment-btn" data-method="debito">
+                    <span class="payment-icon">🏧</span>
+                    <span>Débito</span>
+                </button>
+                <button class="payment-btn" data-method="pix">
+                    <span class="payment-icon">📱</span>
+                    <span>PIX</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Bar at Bottom -->
+    <div class="cart-bar">
+        <div class="cart-content">
+            <div class="cart-items-count">
+                🛒 <span id="cartCount">0</span> item(ns)
+            </div>
+            <div class="cart-total">
+                Total: <span id="cartTotal">R$ 0,00</span>
+            </div>
+            <div class="cart-buttons">
+                <button class="cart-btn cart-preview-btn" id="cartPreviewBtn" onclick="showCartModal()">Ver Carrinho</button>
+                <button class="cart-btn" id="checkoutBtn">Pedir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/functions.js"></script>
+    <script src="js/inicio.js"></script>
+    <script src="js/petiscos.js"></script>
+    <script src="js/lanches.js"></script>
+    <script src="js/doces.js"></script>
+    <script src="js/drinks.js"></script>
+    <script src="js/feedback.js"></script>
+    <script src="js/sobre.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>

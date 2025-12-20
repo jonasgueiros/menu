@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Menu Catalog</title>
+    <link rel="stylesheet" href="../theme.css">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: var(--gradient-primary);
+            color: white;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid white;
+        }
+
+        .back-link:hover {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .admin-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .admin-sidebar {
+            width: 100px;
+            background: var(--gradient-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .admin-nav-btn {
+            width: 70px;
+            height: 70px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .admin-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .admin-nav-btn.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        .admin-nav-btn.active::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            width: 4px;
+            height: 40px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .admin-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .admin-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .search-filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input, .filter-select {
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .admin-page {
+            display: none;
+        }
+
+        .admin-page.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>👨‍🍳 Painel Administrativo</h1>
+        <a href="../index.html" class="back-link">← Voltar ao Menu</a>
+    </div>
+
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <button class="admin-nav-btn active" data-page="home" onclick="switchAdminPage('home')" title="Home">
+                <span>🏠</span>
+            </button>
+            <button class="admin-nav-btn" data-page="orders" onclick="switchAdminPage('orders')" title="Pedidos">
+                <span>📋</span>
+            </button>
+            <button class="admin-nav-btn" data-page="products" onclick="switchAdminPage('products')" title="Produtos">
+                <span>🛠️</span>
+            </button>
+            <button class="admin-nav-btn" data-page="history" onclick="switchAdminPage('history')" title="Histórico">
+                <span>📜</span>
+            </button>
+            <button class="admin-nav-btn" data-page="feedback" onclick="switchAdminPage('feedback')" title="Feedback">
+                <span>💬</span>
+            </button>
+            <button class="admin-nav-btn" data-page="about" onclick="switchAdminPage('about')" title="Sobre o Restaurante">
+                <span>ℹ️</span>
+            </button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="admin-main">
+            <div class="admin-content">
+                <div class="admin-container">
+                    <!-- Home Page -->
+                    <div class="admin-page active" id="home-page">
+                        <h2>📊 Resume do Dia</h2>
+
+                        <!-- Dashboard Stats -->
+                        <div class="dashboard-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Receita do Dia</div>
+                                    <div class="stat-value" id="totalRevenue">R$ 0,00</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Pedidos Pagos</div>
+                                    <div class="stat-value" id="paidOrdersCount">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📦</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Pedidos Pendentes</div>
+                                    <div class="stat-value" id="pendingOrdersCount">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Most Requested Items -->
+                        <div class="dashboard-section" style="margin-top: 30px;">
+                            <h2>🏆 Itens Mais Pedidos</h2>
+                            <div class="most-requested-list" id="mostRequestedList">
+                                <p class="empty-state">Nenhuma venda registrada</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Page -->
+                    <div class="admin-page" id="orders-page">
+                        <h2>📋 Todos os Pedidos</h2>
+                        <div class="orders-list" id="allOrdersList">
+                            <p class="empty-state">Nenhum pedido no momento</p>
+                        </div>
+                    </div>
+
+                    <!-- Products Page -->
+                    <div class="admin-page" id="products-page">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>🛠️ Gerenciar Produtos</h2>
+                            <button class="add-product-btn" id="addProductBtn">+ Novo Produto</button>
+                        </div>
+                        <div class="search-filter-container">
+                            <input type="text" class="search-input" id="productSearch" placeholder="🔍 Buscar produto por nome...">
+                            <select class="filter-select" id="categoryFilter">
+                                <option value="">Todas as categorias</option>
+                                <option value="petiscos">Petiscos</option>
+                                <option value="lanches">Lanches</option>
+                                <option value="doces">Doces</option>
+                                <option value="drinks">Bebidas</option>
+                                <option value="combos">Combos</option>
+                                <option value="promoção">Promoção</option>
+                            </select>
+                        </div>
+                        <div class="products-management" id="productsManagement"></div>
+                    </div>
+
+                    <!-- History Page -->
+                    <div class="admin-page" id="history-page">
+                        <h2>📜 Histórico de Pedidos Pagos</h2>
+                        <div class="orders-list" id="historyList">
+                            <p class="empty-state">Nenhum pedido pago registrado</p>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Page -->
+                    <div class="admin-page" id="feedback-page">
+                        <h2>💬 Feedback e Reclamações</h2>
+                        <div class="feedback-list" id="feedbackList">
+                            <p class="empty-state">Nenhum feedback registrado</p>
+                        </div>
+                    </div>
+                    <!-- About Page (editable) -->
+                    <div class="admin-page" id="about-page">
+                        <h2>ℹ️ Sobre o Restaurante</h2>
+                        <form id="aboutForm" style="display: grid; gap: 12px; max-width: 800px;">
+                            <div class="form-group">
+                                <label>Nome do Lugar</label>
+                                <input type="text" id="aboutName" placeholder="Ex.: Cantina da Família">
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem Principal</label>
+                                <input type="file" id="aboutImage" accept="image/*">
+                                <img id="aboutImagePreview" alt="Prévia da imagem" style="display:none; max-height:160px; margin-top:8px; border-radius:12px;">
+                            </div>
+                            <div class="form-group">
+                                <label>História</label>
+                                <textarea id="aboutHistory" rows="4" placeholder="Conte um pouco sobre a história..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Sobre a Comida</label>
+                                <textarea id="aboutFood" rows="3" placeholder="O que torna a comida especial?"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Equipe</label>
+                                <textarea id="aboutStaff" rows="3" placeholder="Quem faz parte da equipe?"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Slogan/Motto</label>
+                                <input type="text" id="aboutSlogan" placeholder="Ex.: Sabor que abraça">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-save">Salvar</button>
+                                <button type="button" class="btn-cancel" id="aboutCancel">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="modalTitle">Adicionar Novo Produto</h2>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label>Nome do Produto *</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrição *</label>
+                    <textarea id="productDescription" required rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Categoria *</label>
+                        <select id="productCategory" required>
+                            <option value="">Selecione...</option>
+                            <option value="petiscos">Petiscos</option>
+                            <option value="lanches">Lanches</option>
+                            <option value="doces">Doces</option>
+                            <option value="drinks">Bebidas</option>
+                            <option value="combos">Combos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Imagem do Produto</label>
+                        <input type="file" id="productImage" accept="image/*">
+                        <img id="productImagePreview" alt="Prévia da imagem" style="display:none; max-height:80px; margin-top:8px; border-radius:8px;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Preço (BRL) *</label>
+                        <input type="number" id="productPrice" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço Original (desconto) BRL</label>
+                        <input type="number" id="productOriginalPrice" step="0.01" min="0">
+                    </div>
+                </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="productMostOrdered">
+                                Mais Pedido
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="productPromotion">
+                                Em Promoção
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="productCombo">
+                                É um Combo
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="productOutOfStock">
+                                Em falta
+                            </label>
+                        </div>
+                    </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">Salvar</button>
+                    <button type="button" class="btn-cancel">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/shared.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<header class="page-header">
+  <h1>Feedback</h1>
+</header>
+<form class="feedback-form">
+  <div class="feedback-type">
+    <label>Seu feedback é sobre:</label>
+    <div class="radio-group">
+      <label class="radio-label">
+        <input type="radio" name="feedbackType" value="restaurante" required>
+        <span>🍽️ Restaurante</span>
+      </label>
+      <label class="radio-label">
+        <input type="radio" name="feedbackType" value="sistema" required>
+        <span>💻 Sistema</span>
+      </label>
+    </div>
+  </div>
+  <textarea placeholder="Deixe seu comentário..." rows="5" required></textarea>
+  <input type="email" placeholder="Seu email (opcional)">
+  <button type="submit" class="submit-btn">Enviar Feedback</button>
+</form>
