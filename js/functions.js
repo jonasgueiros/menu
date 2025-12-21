@@ -71,8 +71,8 @@ function checkout() {
         btn.onclick = (e) => {
             e.stopPropagation();
             const paymentMethod = btn.getAttribute('data-method');
-            completeCheckout(paymentMethod);
-            paymentModal.classList.remove('show');
+            closePaymentModal();
+            showConfirmationModal(paymentMethod);
         };
     });
 }
@@ -80,6 +80,61 @@ function checkout() {
 function closePaymentModal() {
     const paymentModal = document.getElementById('paymentModal');
     paymentModal.classList.remove('show');
+}
+
+function showConfirmationModal(paymentMethod) {
+    const confirmationModal = document.getElementById('confirmationModal');
+    const confirmationPreview = document.getElementById('confirmationPreview');
+    
+    const paymentLabels = {
+        'dinheiro': '💵 Dinheiro',
+        'credito': '💳 Crédito',
+        'debito': '🏧 Débito',
+        'pix': '📱 PIX'
+    };
+    
+    // Create confirmation preview
+    let total = cart.reduce((sum, item) => {
+        const price = parseBRL(item.priceBRL);
+        return sum + (price * item.quantity);
+    }, 0);
+    
+    const totalDisplay = formatBRL(total);
+    
+    const previewHTML = `
+        <div style="padding: 15px; background: var(--surface); border-radius: 8px; font-size: 13px;">
+            <p style="margin: 0 0 10px 0; font-weight: bold;">📋 Resumo do Pedido:</p>
+            ${cart.map((item, idx) => {
+                const price = parseBRL(item.priceBRL);
+                const itemTotal = (price * item.quantity).toFixed(2);
+                return `
+                    <div style="margin: 8px 0; padding: 8px; background: var(--bg); border-radius: 4px;">
+                        <p style="margin: 0;">${idx + 1}. ${item.name} (x${item.quantity})</p>
+                        <p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">R$ ${itemTotal.replace('.', ',')}</p>
+                        ${item.note ? `<p style="margin: 4px 0 0 0; color: #ff9800; font-size: 12px;">📝 ${item.note}</p>` : ''}
+                    </div>
+                `;
+            }).join('')}
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--border);">
+                <p style="margin: 0; font-weight: bold; font-size: 14px;">Total: ${totalDisplay}</p>
+                <p style="margin: 6px 0 0 0; color: #666;">Pagamento: ${paymentLabels[paymentMethod]}</p>
+            </div>
+        </div>
+    `;
+    
+    confirmationPreview.innerHTML = previewHTML;
+    confirmationModal.classList.add('show');
+    
+    // Handle confirmation
+    document.getElementById('confirmOrderBtn').onclick = () => {
+        closeConfirmationModal();
+        completeCheckout(paymentMethod);
+    };
+}
+
+function closeConfirmationModal() {
+    const confirmationModal = document.getElementById('confirmationModal');
+    confirmationModal.classList.remove('show');
 }
 
 function completeCheckout(paymentMethod) {
@@ -107,6 +162,8 @@ function completeCheckout(paymentMethod) {
     }, 0);
     
     const totalDisplay = formatBRL(total);
+    const now = new Date();
+    const timestamp = now.toLocaleString('pt-BR');
     
     orderSummary += `\n━━━━━━━━━━━━━━━━━━━━\nTOTAL: ${totalDisplay}\nPagamento: ${paymentLabels[paymentMethod]}\n\nPedido enviado para a cozinha! ✓`;
     
@@ -120,8 +177,10 @@ function completeCheckout(paymentMethod) {
             price: item.priceBRL
         })),
         total: total,
+        totalDisplay: totalDisplay,
         paymentMethod: paymentMethod,
-        timestamp: new Date().toLocaleString('pt-BR'),
+        paymentLabel: paymentLabels[paymentMethod],
+        timestamp: timestamp,
         status: 'pending',
         paid: false
     };
@@ -131,17 +190,105 @@ function completeCheckout(paymentMethod) {
     
     alert(orderSummary);
     
-    // Ask for feedback
-    const feedback = prompt('Obrigado pela sua compra! 😊\n\nGostaríamos de ouvir sua opinião:\n(Deixe em branco se não quiser comentar)');
-    if (feedback && feedback.trim()) {
-        order.feedback = feedback.trim();
-        // Update the order with feedback
-        orders[orders.length - 1].feedback = feedback.trim();
-        localStorage.setItem('orders', JSON.stringify(orders));
-    }
+    // Show receipt modal
+    showReceiptModal(order);
     
     cart.length = 0;
     updateCartDisplay();
+}
+
+function showReceiptModal(order) {
+    const receiptModal = document.getElementById('receiptModal');
+    const receiptPreview = document.getElementById('receiptPreview');
+    
+    // Create receipt HTML
+    const receiptHTML = `
+        <div id="receiptContent" style="padding: 20px; background: white; border-radius: 8px; font-family: monospace; font-size: 13px; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 16px;">🍽️ COMPROVANTE DE PEDIDO</h3>
+                <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">Pedido #${order.id}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 0; font-size: 12px; color: #666;">📅 ${order.timestamp}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+                <p style="margin: 0 0 10px 0; font-weight: bold;">ITENS DO PEDIDO:</p>
+                ${order.items.map((item, idx) => {
+                    const price = parseBRL(item.price);
+                    const itemTotal = (price * item.quantity).toFixed(2);
+                    return `
+                        <div style="margin-bottom: 10px;">
+                            <p style="margin: 0;">${idx + 1}. ${item.name}</p>
+                            <p style="margin: 0; color: #666;">   Qtd: ${item.quantity} x R$ ${price.toFixed(2).replace('.', ',')} = R$ ${itemTotal.replace('.', ',')}</p>
+                            ${item.note ? `<p style="margin: 5px 0 0 0; color: #ff9800;">   📝 Nota: ${item.note}</p>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <div style="border-top: 2px solid #333; padding-top: 10px; margin-bottom: 15px;">
+                <p style="margin: 0; font-weight: bold; font-size: 16px;">TOTAL: ${order.totalDisplay}</p>
+                <p style="margin: 8px 0 0 0;">Pagamento: ${order.paymentLabel}</p>
+            </div>
+            
+            <div style="text-align: center; border-top: 1px dashed #999; padding-top: 10px; color: #666; font-size: 12px;">
+                <p style="margin: 0;">Obrigado pela preferência!</p>
+                <p style="margin: 5px 0 0 0;">✓ Pedido enviado para a cozinha</p>
+            </div>
+        </div>
+    `;
+    
+    receiptPreview.innerHTML = receiptHTML;
+    receiptModal.classList.add('show');
+    
+    // Handle save buttons
+    document.getElementById('savePdfBtn').onclick = () => {
+        saveReceiptAsPDF(order);
+    };
+    
+    document.getElementById('saveImageBtn').onclick = () => {
+        saveReceiptAsImage(order);
+    };
+}
+
+function closeReceiptModal() {
+    const receiptModal = document.getElementById('receiptModal');
+    receiptModal.classList.remove('show');
+}
+
+function saveReceiptAsPDF(order) {
+    const element = document.getElementById('receiptContent');
+    const opt = {
+        margin: 10,
+        filename: `comprovante_${order.id}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+    alert('Comprovante salvo como PDF! ✓');
+    closeReceiptModal();
+}
+
+function saveReceiptAsImage(order) {
+    const element = document.getElementById('receiptContent');
+    
+    html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `comprovante_${order.id}.png`;
+        link.click();
+        alert('Comprovante salvo como imagem! ✓');
+        closeReceiptModal();
+    });
 }
 
 // Cart Modal Functions

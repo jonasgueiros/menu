@@ -139,6 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
         targetPage.classList.add('active');
       }
 
+      // Show/hide cart bar based on page
+      const cartBar = document.querySelector('.cart-bar');
+      if (cartBar) {
+        cartBar.style.display = pageName === 'sobre' ? 'none' : 'flex';
+      }
+
       // Initialize selected page
       await initPage(pageName);
     });
@@ -156,6 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetPage = document.getElementById('sobre-page');
       if (targetPage) {
         targetPage.classList.add('active');
+      }
+      // Hide cart bar on about page
+      const cartBar = document.querySelector('.cart-bar');
+      if (cartBar) {
+        cartBar.style.display = 'none';
       }
       await initPage('sobre');
     });

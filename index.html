@@ -175,6 +175,49 @@
         </div>
     </div>
 
+    <!-- Order Confirmation Modal -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content confirmation-modal">
+            <div class="modal-header">
+                <h2>✅ Confirmar Pedido</h2>
+                <span class="modal-close" onclick="closeConfirmationModal()">&times;</span>
+            </div>
+            <p>Tem certeza que deseja enviar este pedido para a cozinha?</p>
+            <div id="confirmationPreview" class="confirmation-preview"></div>
+            <div class="confirmation-actions">
+                <button class="confirmation-btn confirm" id="confirmOrderBtn">
+                    <span>✓ Confirmar e Enviar</span>
+                </button>
+                <button class="confirmation-btn cancel" onclick="closeConfirmationModal()">
+                    <span>✕ Cancelar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Save Modal -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content receipt-modal">
+            <div class="modal-header">
+                <h2>💾 Salvar Comprovante</h2>
+                <span class="modal-close" onclick="closeReceiptModal()">&times;</span>
+            </div>
+            <p>Deseja salvar uma cópia do comprovante?</p>
+            <div id="receiptPreview" class="receipt-preview"></div>
+            <div class="receipt-actions">
+                <button class="receipt-btn" id="savePdfBtn">
+                    <span>📄 Salvar como PDF</span>
+                </button>
+                <button class="receipt-btn" id="saveImageBtn">
+                    <span>🖼️ Salvar como Imagem</span>
+                </button>
+                <button class="receipt-btn cancel" onclick="closeReceiptModal()">
+                    <span>Não Salvar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Cart Bar at Bottom -->
     <div class="cart-bar">
         <div class="cart-content">
@@ -202,5 +245,7 @@
     <script src="js/feedback.js"></script>
     <script src="js/sobre.js"></script>
     <script src="js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
