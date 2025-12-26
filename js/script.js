@@ -145,6 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
         cartBar.style.display = pageName === 'sobre' ? 'none' : 'flex';
       }
 
+      // Clear about page when leaving it
+      const sobrePage = document.getElementById('sobre-page');
+      if (pageName !== 'sobre' && sobrePage) {
+        sobrePage.innerHTML = '';
+        sobrePage.dataset.loaded = 'false';
+      }
+
       // Initialize selected page
       await initPage(pageName);
     });
