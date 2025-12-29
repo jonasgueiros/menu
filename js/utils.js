@@ -39,7 +39,7 @@ function renderMenuItems(items, containerId) {
         const categoryLabel = item.isCombo ? 'Combo' : (item.category?.charAt(0).toUpperCase() + item.category?.slice(1));
 
         const imageHTML = item.imageDataUrl
-            ? `<img class="item-image" src="${item.imageDataUrl}" alt="${item.name}" style="width:64px;height:64px;object-fit:cover;border-radius:12px;">`
+            ? `<img class="item-image" src="${item.imageDataUrl}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;">`
             : `<div class="item-image">${item.emoji || ''}</div>`;
 
         const outBadge = item.outOfStock ? '<span class="out-of-stock-badge">🔴 Em falta</span>' : '';
@@ -67,8 +67,13 @@ function renderMenuItems(items, containerId) {
                     alert('Este item está em falta no momento.');
                     return;
                 }
-                if (typeof addToCart === 'function') {
-                    addToCart(item);
+                // Check if mobile
+                if (window.innerWidth <= 768) {
+                    showItemDetailsModal(item);
+                } else {
+                    if (typeof addToCart === 'function') {
+                        addToCart(item);
+                    }
                 }
             });
         }

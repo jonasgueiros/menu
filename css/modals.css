@@ -1,0 +1,266 @@
+/* Modal Styles */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text);
+}
+
+.modal-close {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--subtle);
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding: 0;
+    background: none;
+    border: none;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: var(--primary);
+}
+
+.modal h2 {
+    color: #333;
+    margin-bottom: 20px;
+    clear: both;
+}
+
+/* Payment Modal */
+.payment-modal {
+    max-width: 400px;
+    text-align: center;
+}
+
+.payment-modal h2 {
+    margin-bottom: 10px;
+}
+
+.payment-modal p {
+    color: var(--muted);
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.payment-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.payment-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 30px;
+    border: 2px solid var(--border);
+    background: var(--bg-panel);
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1em;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.payment-btn:hover {
+    border-color: var(--primary);
+    background: #f0f4ff;
+    transform: translateY(-5px);
+}
+
+.payment-icon {
+    font-size: 2em;
+}
+
+/* Confirmation Modal Styles */
+.confirmation-modal {
+    max-width: 500px;
+    text-align: center;
+}
+
+.confirmation-modal h2 {
+    margin-bottom: 10px;
+}
+
+.confirmation-modal p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.confirmation-preview {
+    margin-bottom: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.confirmation-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.confirmation-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+}
+
+.confirmation-btn.confirm {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.confirmation-btn.confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.confirmation-btn.cancel {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.confirmation-btn.cancel:hover {
+    background: var(--bg-panel);
+}
+
+/* Receipt Modal Styles */
+.receipt-modal {
+    max-width: 500px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.receipt-modal h2 {
+    margin-bottom: 10px;
+}
+
+.receipt-modal p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.receipt-preview {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    max-height: 400px;
+}
+
+.receipt-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.receipt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: 2px solid var(--primary);
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.receipt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.receipt-btn.cancel {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.receipt-btn.cancel:hover {
+    background: var(--bg-panel);
+}
+
+/* Item Details Modal Styles */
+.item-details-modal {
+    max-width: 450px;
+}
+
+.item-details-modal .modal-header {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .payment-options {
+        grid-template-columns: 1fr;
+    }
+}

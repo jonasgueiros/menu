@@ -5,13 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Catalog</title>
     <link rel="stylesheet" href="theme.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link rel="stylesheet" href="css/sobre.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/feedback.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
     <div class="layout">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <div class="logo">🍽️</div>
+            <div class="logo-container" onclick="window.location.href='html/sobre.html'">
+                <img id="logoDesktop" class="logo-image logo-desktop">
+                <img id="logoMobile" class="logo-image logo-mobile">
+                <div id="logoFallback" class="logo-fallback">🍽️</div>
+            </div>
             <nav class="nav-menu">
                 <button class="nav-btn active" data-page="inicio">
                     <span class="icon">🏠</span>
@@ -27,9 +37,6 @@
                 </button>
                 <button class="nav-btn" data-page="drinks">
                     <span class="icon">🍷</span>
-                </button>
-                <button class="nav-btn" data-page="feedback">
-                    <span class="icon">💬</span>
                 </button>
             </nav>
         </aside>
@@ -63,7 +70,7 @@
                 </div>
             </section>
 
-            <!-- Petiscos Page -->
+            <!-- Petiscos, Lanches, Doces, Drinks Pages -->
             <section class="page" id="petiscos-page">
                 <header class="page-header">
                     <h1>Petiscos</h1>
@@ -95,31 +102,6 @@
                 <div class="menu-grid" id="drinksGrid"></div>
             </section>
 
-            <!-- Feedback Page -->
-            <section class="page" id="feedback-page">
-                <header class="page-header">
-                    <h1>Feedback</h1>
-                </header>
-                <form class="feedback-form">
-                    <div class="feedback-type">
-                        <label>Seu feedback é sobre:</label>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="feedbackType" value="restaurante" required>
-                                <span>🍽️ Restaurante</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="feedbackType" value="sistema" required>
-                                <span>💻 Sistema</span>
-                            </label>
-                        </div>
-                    </div>
-                    <textarea placeholder="Deixe seu comentário..." rows="5" required></textarea>
-                    <input type="email" placeholder="Seu email (opcional)">
-                    <button type="submit" class="submit-btn">Enviar Feedback</button>
-                </form>
-            </section>
-
             <!-- Sobre Page (loaded from fragment) -->
             <section class="page" id="sobre-page">
                 <!-- Conteúdo será carregado dinamicamente de html/sobre.html -->
@@ -141,7 +123,31 @@
                 <div class="cart-modal-total">
                     Total: <span id="cartModalTotal">R$ 0,00</span>
                 </div>
-                <button class="btn-cancel" onclick="closeCartModal()">Fechar</button>
+                <button class="btn-cancel" onclick="closeCartModal()">Voltar</button>
+                <button class="btn-primary" id="proceedToPaymentBtn" onclick="proceedToPayment()">Continuar para Pagamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Details Modal (Mobile) -->
+    <div class="modal" id="itemDetailsModal">
+        <div class="modal-content item-details-modal">
+            <div class="modal-header">
+                <h2 id="itemDetailsName">Item</h2>
+                <span class="modal-close" onclick="closeItemDetailsModal()">&times;</span>
+            </div>
+            <div id="itemDetailsContent" style="padding: 20px; text-align: center;">
+                <div id="itemDetailsImage" style="width: 100%; height: 150px; background: var(--gradient-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3em; margin-bottom: 15px;"></div>
+                <p id="itemDetailsDescription" style="font-size: 1em; color: var(--text); margin-bottom: 10px; line-height: 1.5;"></p>
+                <p id="itemDetailsPrice" style="font-size: 1.3em; font-weight: 700; color: var(--primary); margin-bottom: 15px;"></p>
+                <div style="border-top: 1px solid var(--border); padding-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; text-align: left; font-weight: 600;">Deseja adicionar alguma nota? (opcional)</label>
+                    <textarea id="itemDetailsNote" placeholder="Ex: Sem cebola, bem passado..." style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9em; resize: vertical; min-height: 80px;"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 20px; border-top: 1px solid var(--border);">
+                <button class="btn-cancel" onclick="closeItemDetailsModal()" style="flex: 1;">Cancelar</button>
+                <button class="btn-primary" id="addToCartConfirmBtn" onclick="confirmAddToCart()" style="flex: 1;">Adicionar ao Carrinho</button>
             </div>
         </div>
     </div>
@@ -219,7 +225,7 @@
     </div>
 
     <!-- Cart Bar at Bottom -->
-    <div class="cart-bar">
+    <div class="cart-bar hidden">
         <div class="cart-content">
             <div class="cart-items-count">
                 🛒 <span id="cartCount">0</span> item(ns)
@@ -237,12 +243,7 @@
     <script src="js/shared.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/functions.js"></script>
-    <script src="js/inicio.js"></script>
-    <script src="js/petiscos.js"></script>
-    <script src="js/lanches.js"></script>
-    <script src="js/doces.js"></script>
-    <script src="js/drinks.js"></script>
-    <script src="js/feedback.js"></script>
+    <script src="js/tabs.js"></script>
     <script src="js/sobre.js"></script>
     <script src="js/script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>

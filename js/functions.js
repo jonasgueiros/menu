@@ -1,6 +1,15 @@
 // Cart and payment functions extracted for main page usage
 
 function addToCart(item) {
+    // Check if restaurant is closed
+    const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
+    if (!isOpen) {
+        const shouldContinue = confirm('⚠️ O restaurante está fechado no momento!\n\nVocê pode adicionar o item ao carrinho, mas o pedido só será aceito quando o restaurante abrir.\n\nDeseja continuar?');
+        if (!shouldContinue) {
+            return;
+        }
+    }
+    
     if (item.outOfStock) {
         alert('Este item está em falta no momento.');
         return;
@@ -38,6 +47,7 @@ function updateCartDisplay() {
     const cartTotal = document.getElementById('cartTotal');
     const checkoutBtn = document.getElementById('checkoutBtn');
     const cartPreviewBtn = document.getElementById('cartPreviewBtn');
+    const cartBar = document.querySelector('.cart-bar');
     
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     cartCount.textContent = totalItems;
@@ -53,28 +63,32 @@ function updateCartDisplay() {
     if (cartPreviewBtn) {
         cartPreviewBtn.disabled = cart.length === 0;
     }
+    
+    // Show/hide cart bar based on cart contents
+    if (cartBar) {
+        if (cart.length === 0) {
+            cartBar.classList.add('hidden');
+        } else {
+            cartBar.classList.remove('hidden');
+        }
+    }
 }
 
 function checkout() {
+    // Check if restaurant is open
+    const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
+    if (!isOpen) {
+        alert('❌ Restaurante está fechado! Não é possível fazer pedidos no momento.\n\nPor favor, tente novamente quando abrirmos.');
+        return;
+    }
+    
     if (cart.length === 0) {
         alert('Seu carrinho está vazio!');
         return;
     }
     
-    // Show payment method modal
-    const paymentModal = document.getElementById('paymentModal');
-    paymentModal.classList.add('show');
-    
-    // Handle payment button clicks
-    const paymentButtons = paymentModal.querySelectorAll('.payment-btn');
-    paymentButtons.forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            const paymentMethod = btn.getAttribute('data-method');
-            closePaymentModal();
-            showConfirmationModal(paymentMethod);
-        };
-    });
+    // Show cart modal for review before payment
+    showCartModal();
 }
 
 function closePaymentModal() {
@@ -303,6 +317,31 @@ function closeCartModal() {
     cartModal.classList.remove('show');
 }
 
+function proceedToPayment() {
+    // Check if cart is still not empty
+    if (cart.length === 0) {
+        alert('Seu carrinho está vazio!');
+        return;
+    }
+    
+    // Close cart modal and show payment method modal
+    closeCartModal();
+    
+    const paymentModal = document.getElementById('paymentModal');
+    paymentModal.classList.add('show');
+    
+    // Handle payment button clicks
+    const paymentButtons = paymentModal.querySelectorAll('.payment-btn');
+    paymentButtons.forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const paymentMethod = btn.getAttribute('data-method');
+            closePaymentModal();
+            showConfirmationModal(paymentMethod);
+        };
+    });
+}
+
 function displayCartItems() {
     const cartItemsList = document.getElementById('cartItemsList');
     const cartModalTotal = document.getElementById('cartModalTotal');
@@ -345,5 +384,69 @@ function removeItemFromCart(cartId) {
     }
     updateCartDisplay();
     displayCartItems();
+}
+
+// Store current item for modal confirmation
+let currentItemForModal = null;
+
+// Show item details modal for mobile
+function showItemDetailsModal(item) {
+    currentItemForModal = item;
+    const modal = document.getElementById('itemDetailsModal');
+    const nameEl = document.getElementById('itemDetailsName');
+    const descriptionEl = document.getElementById('itemDetailsDescription');
+    const priceEl = document.getElementById('itemDetailsPrice');
+    const imageEl = document.getElementById('itemDetailsImage');
+    const noteEl = document.getElementById('itemDetailsNote');
+    
+    // Populate modal
+    nameEl.textContent = item.name;
+    descriptionEl.textContent = item.description || 'Sem descrição disponível';
+    priceEl.textContent = item.priceBRL;
+    noteEl.value = '';
+    
+    // Set image
+    if (item.imageDataUrl) {
+        imageEl.innerHTML = `<img src="${item.imageDataUrl}" alt="${item.name}" style="width:100%; height:100%; object-fit: cover; border-radius: 8px;">`;
+    } else {
+        imageEl.innerHTML = item.emoji || '🍽️';
+    }
+    
+    // Show modal
+    modal.classList.add('show');
+}
+
+// Close item details modal
+function closeItemDetailsModal() {
+    const modal = document.getElementById('itemDetailsModal');
+    modal.classList.remove('show');
+    currentItemForModal = null;
+}
+
+// Confirm and add item to cart
+function confirmAddToCart() {
+    if (!currentItemForModal) return;
+    
+    const noteEl = document.getElementById('itemDetailsNote');
+    const note = noteEl?.value || '';
+    
+    const cartItem = {
+        ...currentItemForModal,
+        cartId: Date.now() + Math.random(),
+        note: note,
+        quantity: 1
+    };
+    
+    // Check if item already exists in cart with same note
+    const existingItem = cart.find(c => c.id === currentItemForModal.id && c.note === cartItem.note);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push(cartItem);
+    }
+    
+    updateCartDisplay();
+    closeItemDetailsModal();
+    alert('✅ Item adicionado ao carrinho!');
 }
 

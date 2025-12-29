@@ -1,6 +1,38 @@
 // Main initializer: wires navigation and tab-specific initializers
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize restaurant status on first load
+  if (!localStorage.getItem('restaurantOpen')) {
+    localStorage.setItem('restaurantOpen', 'true');
+    localStorage.setItem('dayStartTime', new Date().toLocaleString('pt-BR'));
+  }
+
+  // Load logos from localStorage
+  loadLogos();
+
+  // Mobile: Hide/show top bar on scroll
+  if (window.innerWidth <= 768) {
+    let lastScrollTop = 0;
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (mainContent && sidebar) {
+      mainContent.addEventListener('scroll', () => {
+        const scrollTop = mainContent.scrollTop;
+        
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+          // Scrolling down - hide sidebar
+          sidebar.classList.add('hide');
+        } else {
+          // Scrolling up - show sidebar
+          sidebar.classList.remove('hide');
+        }
+        
+        lastScrollTop = scrollTop;
+      });
+    }
+  }
+
   // Attach checkout button
   const checkoutBtn = document.getElementById('checkoutBtn');
   if (checkoutBtn && typeof checkout === 'function') {
@@ -11,12 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('click', (e) => {
     const paymentModal = document.getElementById('paymentModal');
     const cartModal = document.getElementById('cartModal');
+    const itemDetailsModal = document.getElementById('itemDetailsModal');
 
     if (e.target === paymentModal && typeof closePaymentModal === 'function') {
       closePaymentModal();
     }
     if (e.target === cartModal && typeof closeCartModal === 'function') {
       closeCartModal();
+    }
+    if (e.target === itemDetailsModal && typeof closeItemDetailsModal === 'function') {
+      closeItemDetailsModal();
     }
   });
 
@@ -30,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     lanches: typeof initLanches === 'function' ? initLanches : null,
     doces: typeof initDoces === 'function' ? initDoces : null,
     drinks: typeof initDrinks === 'function' ? initDrinks : null,
-    feedback: typeof initFeedback === 'function' ? initFeedback : null,
     sobre: typeof initSobre === 'function' ? initSobre : null,
   };
 
@@ -41,27 +76,52 @@ document.addEventListener('DOMContentLoaded', () => {
       switch (name) {
         case 'inicio':
           return `
-            <section>
-              <h2>Mais pedidos</h2>
-              <div id="maispedidosGrid" class="menu-grid"></div>
-            </section>
-            <section>
-              <h2>Promoções</h2>
-              <div id="promocaoGrid" class="menu-grid"></div>
-            </section>
-            <section>
-              <h2>Combos</h2>
-              <div id="combosGrid" class="menu-grid"></div>
-            </section>
+            <header class="page-header">
+              <h1>Bem-vindo</h1>
+            </header>
+            <div class="sections-container">
+              <section class="category-section">
+                <h2>📈 Mais Pedidos</h2>
+                <div class="menu-grid" id="maispedidosGrid"></div>
+              </section>
+              <section class="category-section">
+                <h2>🏷️ Promoção</h2>
+                <div class="menu-grid" id="promocaoGrid"></div>
+              </section>
+              <section class="category-section">
+                <h2>🎁 Combos</h2>
+                <div class="menu-grid" id="combosGrid"></div>
+              </section>
+            </div>
           `;
         case 'petiscos':
-          return `<div id="petiscosGrid" class="menu-grid"></div>`;
+          return `
+            <header class="page-header">
+              <h1>Petiscos</h1>
+            </header>
+            <div class="menu-grid" id="petiscosGrid"></div>
+          `;
         case 'lanches':
-          return `<div id="lanchesGrid" class="menu-grid"></div>`;
+          return `
+            <header class="page-header">
+              <h1>Lanches</h1>
+            </header>
+            <div class="menu-grid" id="lanchesGrid"></div>
+          `;
         case 'doces':
-          return `<div id="docesGrid" class="menu-grid"></div>`;
+          return `
+            <header class="page-header">
+              <h1>Doces</h1>
+            </header>
+            <div class="menu-grid" id="docesGrid"></div>
+          `;
         case 'drinks':
-          return `<div id="drinksGrid" class="menu-grid"></div>`;
+          return `
+            <header class="page-header">
+              <h1>Bebidas</h1>
+            </header>
+            <div class="menu-grid" id="drinksGrid"></div>
+          `;
         case 'sobre':
           return `
             <header class="page-header">
@@ -161,6 +221,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const logo = document.querySelector('.logo');
   if (logo) {
     logo.style.cursor = 'pointer';
+    
+    // Load logo from localStorage
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    if (about.logoDataUrl) {
+      const logoImg = document.createElement('img');
+      logoImg.src = about.logoDataUrl;
+      logoImg.style.maxWidth = '100%';
+      logoImg.style.maxHeight = '100%';
+      logoImg.style.borderRadius = '8px';
+      logo.innerHTML = '';
+      logo.appendChild(logoImg);
+    }
+    
     logo.addEventListener('click', async () => {
       // Deactivate current active page and buttons
       navButtons.forEach((btn) => btn.classList.remove('active'));
@@ -186,3 +259,22 @@ document.addEventListener('DOMContentLoaded', () => {
     initPage(initialPageName);
   }
 });
+
+// Load desktop and mobile logos from localStorage
+function loadLogos() {
+  const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+  const logoDesktopEl = document.getElementById('logoDesktop');
+  const logoMobileEl = document.getElementById('logoMobile');
+  const logoFallback = document.getElementById('logoFallback');
+
+  // Load desktop logo
+  if (logoDesktopEl && about.logoDataUrl) {
+    logoDesktopEl.src = about.logoDataUrl;
+    if (logoFallback) logoFallback.style.display = 'none';
+  }
+
+  // Load mobile logo
+  if (logoMobileEl && about.logoMobileDataUrl) {
+    logoMobileEl.src = about.logoMobileDataUrl;
+  }
+}

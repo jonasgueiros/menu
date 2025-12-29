@@ -8,80 +8,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     initializeAdminPage();
+    initializeProductFeatures();
+    initializeAboutFeatures();
     updateDashboardStats();
     displayMostRequestedItems(10);
     displayAllOrders();
     displayPaymentHistory();
     displayFeedbackComments();
+    updateRestaurantStatusDisplay();
 });
 
 function initializeAdminPage() {
-    const addProductBtn = document.getElementById('addProductBtn');
-    if (addProductBtn) {
-        addProductBtn.addEventListener('click', openProductModal);
-    }
-    
-    const productModal = document.getElementById('productModal');
-    const modalClose = productModal?.querySelector('.modal-close');
-    const btnCancel = productModal?.querySelector('.btn-cancel');
-    
-    if (modalClose) {
-        modalClose.addEventListener('click', closeProductModal);
-    }
-    if (btnCancel) {
-        btnCancel.addEventListener('click', closeProductModal);
-    }
-    
-    const productForm = document.getElementById('productForm');
-    if (productForm) {
-        productForm.addEventListener('submit', saveProduct);
-    }
-    const aboutForm = document.getElementById('aboutForm');
-    const aboutCancel = document.getElementById('aboutCancel');
-    if (aboutForm) {
-        aboutForm.addEventListener('submit', saveAboutInfo);
-        loadAboutInfoForm();
-    }
-    if (aboutCancel) {
-        aboutCancel.addEventListener('click', loadAboutInfoForm);
-    }
-    const aboutImageInput = document.getElementById('aboutImage');
-    if (aboutImageInput) {
-        aboutImageInput.addEventListener('change', (e) => {
-            const file = e.target.files && e.target.files[0];
-            const preview = document.getElementById('aboutImagePreview');
-            if (file && preview) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    preview.src = ev.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else if (preview) {
-                preview.src = '';
-                preview.style.display = 'none';
-            }
-        });
-    }
-    const imageInput = document.getElementById('productImage');
-    if (imageInput) {
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files && e.target.files[0];
-            const preview = document.getElementById('productImagePreview');
-            if (file && preview) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    preview.src = ev.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else if (preview) {
-                preview.src = '';
-                preview.style.display = 'none';
-            }
-        });
-    }
-    
     // Close modal when clicking outside
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('productModal');
@@ -89,17 +26,6 @@ function initializeAdminPage() {
             modal.classList.remove('show');
         }
     });
-
-    // Add search and filter event listeners
-    const productSearch = document.getElementById('productSearch');
-    const categoryFilter = document.getElementById('categoryFilter');
-    
-    if (productSearch) {
-        productSearch.addEventListener('input', filterAndDisplayProducts);
-    }
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', filterAndDisplayProducts);
-    }
     
     displayProductsManagement();
     updateAdminOrders();
@@ -112,233 +38,8 @@ function initializeAdminPage() {
     }, 2000);
 }
 
-function openProductModal(editId = null) {
-    const modal = document.getElementById('productModal');
-    const form = document.getElementById('productForm');
-    const modalTitle = document.getElementById('modalTitle');
-    
-    if (editId) {
-        const product = menuData.find(p => p.id === editId);
-        if (product) {
-            modalTitle.textContent = 'Editar Produto';
-            document.getElementById('productId').value = product.id;
-            document.getElementById('productName').value = product.name;
-            document.getElementById('productDescription').value = product.description;
-            document.getElementById('productCategory').value = product.category;
-            const preview = document.getElementById('productImagePreview');
-            if (preview) {
-                if (product.imageDataUrl) {
-                    preview.src = product.imageDataUrl;
-                    preview.style.display = 'block';
-                } else {
-                    preview.src = '';
-                    preview.style.display = 'none';
-                }
-            }
-            
-            const price = parseFloat(product.priceBRL.replace('R$ ', '').replace(',', '.'));
-            document.getElementById('productPrice').value = price;
-            
-            document.getElementById('productMostOrdered').checked = product.mostOrdered;
-            document.getElementById('productPromotion').checked = product.isPromotion;
-            document.getElementById('productCombo').checked = product.isCombo;
-            const outEl = document.getElementById('productOutOfStock');
-            if (outEl) outEl.checked = !!product.outOfStock;
-            
-            if (product.originalPriceBRL) {
-                const originalPrice = parseFloat(product.originalPriceBRL.replace('R$ ', '').replace(',', '.'));
-                document.getElementById('productOriginalPrice').value = originalPrice;
-            }
-        }
-    } else {
-        modalTitle.textContent = 'Adicionar Novo Produto';
-        form.reset();
-        document.getElementById('productId').value = '';
-        const preview = document.getElementById('productImagePreview');
-        if (preview) {
-            preview.src = '';
-            preview.style.display = 'none';
-        }
-        const outEl = document.getElementById('productOutOfStock');
-        if (outEl) outEl.checked = false;
-    }
-    
-    modal.classList.add('show');
-}
 
-function closeProductModal() {
-    const modal = document.getElementById('productModal');
-    modal.classList.remove('show');
-}
 
-function saveProduct(e) {
-    e.preventDefault();
-    
-    const id = document.getElementById('productId').value;
-    const price = parseFloat(document.getElementById('productPrice').value);
-    
-    const imagePreview = document.getElementById('productImagePreview');
-    const imageDataUrl = imagePreview && imagePreview.src ? imagePreview.src : undefined;
-
-    const product = {
-        id: id ? parseInt(id) : Math.max(...menuData.map(p => p.id || 0), 0) + 1,
-        name: document.getElementById('productName').value,
-        category: document.getElementById('productCategory').value,
-        description: document.getElementById('productDescription').value,
-        imageDataUrl: imageDataUrl,
-        priceBRL: 'R$ ' + price.toFixed(2).replace('.', ','),
-        originalPriceBRL: document.getElementById('productOriginalPrice').value
-            ? 'R$ ' + parseFloat(document.getElementById('productOriginalPrice').value).toFixed(2).replace('.', ',')
-            : undefined,
-        mostOrdered: document.getElementById('productMostOrdered').checked,
-        isPromotion: document.getElementById('productPromotion').checked,
-        isCombo: document.getElementById('productCombo').checked,
-        outOfStock: document.getElementById('productOutOfStock').checked
-    };
-    
-    if (id) {
-        // Edit existing
-        const index = menuData.findIndex(p => p.id === parseInt(id));
-        if (index > -1) {
-            menuData[index] = product;
-        }
-    } else {
-        // Add new
-        menuData.push(product);
-    }
-    
-    // Save to localStorage
-    localStorage.setItem('menuData', JSON.stringify(menuData));
-    
-    closeProductModal();
-    filterAndDisplayProducts();
-    alert('Produto salvo com sucesso!');
-}
-
-function deleteProduct(id) {
-    if (confirm('Tem certeza que deseja deletar este produto?')) {
-        const index = menuData.findIndex(p => p.id === id);
-        if (index > -1) {
-            menuData.splice(index, 1);
-            localStorage.setItem('menuData', JSON.stringify(menuData));
-        }
-        filterAndDisplayProducts();
-        alert('Produto deletado com sucesso!');
-    }
-}
-
-function displayProductsManagement() {
-    const container = document.getElementById('productsManagement');
-    if (!container) return;
-    
-    if (menuData.length === 0) {
-        container.innerHTML = '<p class="empty-state">Nenhum produto cadastrado</p>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    menuData.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        
-        let priceDisplay = product.priceBRL;
-        if (product.isPromotion && product.originalPriceBRL) {
-            priceDisplay += ` <span style="text-decoration: line-through; color: #999;">(era ${product.originalPriceBRL})</span>`;
-        }
-        
-        let badges = '';
-        if (product.mostOrdered) badges += '<span style="background: #4CAF50; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 5px;">📈 Mais Pedido</span>';
-        if (product.isPromotion) badges += '<span style="background: #FF9800; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 5px;">🏷️ Promoção</span>';
-        if (product.isCombo) badges += '<span style="background: #2196F3; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em;">🎁 Combo</span>';
-        if (product.outOfStock) badges += '<span style="background: #f44336; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-left: 5px;">🔴 Em falta</span>';
-        
-        const mediaHTML = product.imageDataUrl 
-            ? `<img src="${product.imageDataUrl}" alt="${product.name}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;margin-right:8px;vertical-align:middle;">`
-            : `<span style="font-size:1.5em;margin-right:8px;vertical-align:middle;">${product.emoji || '🍽️'}</span>`;
-
-        card.innerHTML = `
-            <div class="product-info">
-                <div class="product-name">${mediaHTML} ${product.name}</div>
-                <div style="font-size: 0.85em; color: #999; margin: 5px 0;">${product.category}</div>
-                <div class="product-price">${priceDisplay}</div>
-                <div style="margin-top: 8px;">${badges}</div>
-            </div>
-            <div class="product-actions">
-                <button class="btn-edit" onclick="openProductModal(${product.id})">Editar</button>
-                <button class="btn-delete" onclick="deleteProduct(${product.id})">Deletar</button>
-                <button class="btn-toggle" onclick="toggleProductAvailability(${product.id})">${product.outOfStock ? 'Marcar como disponível' : 'Marcar "Em falta"'}</button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function filterAndDisplayProducts() {
-    const container = document.getElementById('productsManagement');
-    const searchInput = document.getElementById('productSearch');
-    const categoryFilter = document.getElementById('categoryFilter');
-    
-    if (!container || !searchInput || !categoryFilter) return;
-    
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedCategory = categoryFilter.value;
-    
-    // Filter products
-    const filteredProducts = menuData.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
-                            product.description.toLowerCase().includes(searchTerm);
-        
-        let matchesCategory = true;
-        if (selectedCategory === 'promoção') {
-            matchesCategory = product.isPromotion === true;
-        } else if (selectedCategory) {
-            matchesCategory = product.category === selectedCategory;
-        }
-        
-        return matchesSearch && matchesCategory;
-    });
-    
-    if (filteredProducts.length === 0) {
-        container.innerHTML = '<p class="empty-state">Nenhum produto encontrado</p>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    filteredProducts.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        
-        let priceDisplay = product.priceBRL;
-        if (product.isPromotion && product.originalPriceBRL) {
-            priceDisplay += ` <span style="text-decoration: line-through; color: #999;">(era ${product.originalPriceBRL})</span>`;
-        }
-        
-        let badges = '';
-        if (product.mostOrdered) badges += '<span style="background: #4CAF50; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 5px;">📈 Mais Pedido</span>';
-        if (product.isPromotion) badges += '<span style="background: #FF9800; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 5px;">🏷️ Promoção</span>';
-        if (product.isCombo) badges += '<span style="background: #2196F3; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em;">🎁 Combo</span>';
-        if (product.outOfStock) badges += '<span style="background: #f44336; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-left: 5px;">🔴 Em falta</span>';
-        
-        const mediaHTML = product.imageDataUrl 
-            ? `<img src="${product.imageDataUrl}" alt="${product.name}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;margin-right:8px;vertical-align:middle;">`
-            : `<span style="font-size:1.5em;margin-right:8px;vertical-align:middle;">${product.emoji || '🍽️'}</span>`;
-
-        card.innerHTML = `
-            <div class="product-info">
-                <div class="product-name">${mediaHTML} ${product.name}</div>
-                <div style="font-size: 0.85em; color: #999; margin: 5px 0;">${product.category}</div>
-                <div class="product-price">${priceDisplay}</div>
-                <div style="margin-top: 8px;">${badges}</div>
-            </div>
-            <div class="product-actions">
-                <button class="btn-edit" onclick="openProductModal(${product.id})">Editar</button>
-                <button class="btn-delete" onclick="deleteProduct(${product.id})">Deletar</button>
-                <button class="btn-toggle" onclick="toggleProductAvailability(${product.id})">${product.outOfStock ? 'Marcar como disponível' : 'Marcar "Em falta"'}</button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
 
 function updateAdminOrders() {
     const ordersList = document.getElementById('ordersList');
@@ -385,11 +86,9 @@ function updateAdminOrders() {
             <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">🕐 ${order.timestamp}</div>
             ${itemsHTML}
             <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
-            <div class="order-actions">
-                <label class="payment-checkbox">
-                    <input type="checkbox" onchange="markOrderAsPaid(${order.id})">
-                    <span>✅ Pedido Pago</span>
-                </label>
+            <div class="order-actions" style="display: flex; gap: 10px;">
+                <button class="btn-mark-paid" onclick="markOrderAsPaid(${order.id})">✅ Marcar como Pago</button>
+                <button class="btn-cancel-order" onclick="cancelOrder(${order.id})">❌ Cancelar Pedido</button>
             </div>
         `;
         ordersList.appendChild(orderCard);
@@ -398,6 +97,10 @@ function updateAdminOrders() {
 
 // Payment and History Management
 function markOrderAsPaid(orderId) {
+    if (!confirm('Tem certeza que deseja marcar este pedido como pago?')) {
+        return;
+    }
+    
     const savedOrders = localStorage.getItem('orders');
     const orders = savedOrders ? JSON.parse(savedOrders) : [];
     
@@ -433,6 +136,40 @@ function markOrderAsPaid(orderId) {
         alert('✅ Pedido marcado como pago!');
     } else {
         alert('❌ Erro ao marcar pedido como pago. Tente novamente.');
+    }
+}
+
+// Cancel order function
+function cancelOrder(orderId) {
+    if (!confirm('Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    const savedOrders = localStorage.getItem('orders');
+    const orders = savedOrders ? JSON.parse(savedOrders) : [];
+    
+    // Find and remove the order
+    const orderIndex = orders.findIndex(o => o.id == orderId);
+    if (orderIndex > -1) {
+        const canceledOrder = orders[orderIndex];
+        canceledOrder.canceled = true;
+        canceledOrder.canceledDate = new Date().toLocaleString('pt-BR');
+        
+        // Move to history as canceled
+        const savedHistory = localStorage.getItem('ordersHistory');
+        const history = savedHistory ? JSON.parse(savedHistory) : [];
+        history.push(canceledOrder);
+        localStorage.setItem('ordersHistory', JSON.stringify(history));
+        
+        // Remove from active orders
+        orders.splice(orderIndex, 1);
+        localStorage.setItem('orders', JSON.stringify(orders));
+        
+        updateAdminOrders();
+        updateDashboardStats();
+        alert('❌ Pedido cancelado com sucesso!');
+    } else {
+        alert('❌ Erro ao cancelar pedido. Tente novamente.');
     }
 }
 
@@ -681,10 +418,7 @@ function displayAllOrders() {
             <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
             ${!order.paid ? `<div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button class="btn-mark-paid" onclick="markOrderAsPaid(${order.id})">✓ Marcar como Pago</button>
-                <label style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" onchange="markOrderAsPaid(${order.id})">
-                    Pago
-                </label>
+                <button class="btn-cancel-order" onclick="cancelOrder(${order.id})">❌ Cancelar Pedido</button>
             </div>` : ''}
         `;
         allOrdersList.appendChild(orderCard);
@@ -762,43 +496,166 @@ function toggleProductAvailability(id) {
         alert(menuData[index].outOfStock ? 'Produto marcado como EM FALTA' : 'Produto marcado como DISPONÍVEL');
     }
 }
-// Load existing About info into the admin form
-function loadAboutInfoForm() {
-    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
-    const nameEl = document.getElementById('aboutName');
-    const historyEl = document.getElementById('aboutHistory');
-    const foodEl = document.getElementById('aboutFood');
-    const staffEl = document.getElementById('aboutStaff');
-    const sloganEl = document.getElementById('aboutSlogan');
-    const imagePreview = document.getElementById('aboutImagePreview');
-    if (!nameEl || !historyEl || !foodEl || !staffEl || !sloganEl) return;
-    nameEl.value = about.name || '';
-    historyEl.value = about.history || '';
-    foodEl.value = about.food || '';
-    staffEl.value = about.staff || '';
-    sloganEl.value = about.slogan || '';
-    if (imagePreview) {
-        if (about.imageDataUrl) {
-            imagePreview.src = about.imageDataUrl;
-            imagePreview.style.display = 'block';
+
+// Restaurant Status Management
+function updateRestaurantStatusDisplay() {
+    const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
+    const statusText = document.getElementById('restaurantStatusText');
+    const toggleBtn = document.getElementById('toggleRestaurantBtn');
+    
+    if (statusText) {
+        if (isOpen) {
+            statusText.textContent = '🟢 Aberto';
+            statusText.style.color = '#4CAF50';
         } else {
-            imagePreview.src = '';
-            imagePreview.style.display = 'none';
+            statusText.textContent = '🔴 Fechado';
+            statusText.style.color = '#f44336';
         }
+    }
+    
+    if (toggleBtn) {
+        toggleBtn.textContent = isOpen ? '🔒 Fechar' : '🔓 Abrir';
+        toggleBtn.style.background = isOpen ? 'white' : '#4CAF50';
+        toggleBtn.style.color = isOpen ? 'var(--primary)' : 'white';
     }
 }
 
-// Save About info from admin form to localStorage
-function saveAboutInfo(e) {
-    e.preventDefault();
-    const about = {
-        name: document.getElementById('aboutName')?.value || '',
-        history: document.getElementById('aboutHistory')?.value || '',
-        food: document.getElementById('aboutFood')?.value || '',
-        staff: document.getElementById('aboutStaff')?.value || '',
-        slogan: document.getElementById('aboutSlogan')?.value || '',
-        imageDataUrl: document.getElementById('aboutImagePreview')?.src || ''
-    };
-    localStorage.setItem('aboutInfo', JSON.stringify(about));
-    alert('Informações "Sobre" salvas com sucesso!');
+function toggleRestaurantStatus() {
+    const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
+    
+    if (isOpen) {
+        // Check for pending orders before closing
+        const savedOrders = localStorage.getItem('orders');
+        const orders = savedOrders ? JSON.parse(savedOrders) : [];
+        
+        if (orders.length > 0) {
+            alert('⚠️ Ainda há ' + orders.length + ' pedido(s) pendente(s)!\n\nPor favor, resolva todos os pedidos antes de fechar o restaurante.');
+            return;
+        }
+        
+        // Closing the restaurant - ask to save stats
+        if (confirm('Tem certeza que deseja fechar o restaurante e encerrar o resumo do dia? Você poderá salvar o relatório como arquivo.')) {
+            closeRestaurantAndSaveStats();
+        }
+    } else {
+        // Opening the restaurant - reset stats display
+        localStorage.setItem('restaurantOpen', 'true');
+        localStorage.setItem('dayStartTime', new Date().toLocaleString('pt-BR'));
+        
+        // Reset stats display
+        const totalRevenueEl = document.getElementById('totalRevenue');
+        const paidOrdersEl = document.getElementById('paidOrdersCount');
+        const pendingOrdersEl = document.getElementById('pendingOrdersCount');
+        
+        if (totalRevenueEl) totalRevenueEl.textContent = 'R$ 0,00';
+        if (paidOrdersEl) paidOrdersEl.textContent = '0';
+        if (pendingOrdersEl) pendingOrdersEl.textContent = '0';
+        
+        updateRestaurantStatusDisplay();
+        alert('✅ Restaurante aberto para novos pedidos!');
+    }
 }
+
+function closeRestaurantAndSaveStats() {
+    // Close restaurant
+    localStorage.setItem('restaurantOpen', 'false');
+    
+    // Clear dashboard stats display
+    const totalRevenueEl = document.getElementById('totalRevenue');
+    const paidOrdersEl = document.getElementById('paidOrdersCount');
+    const pendingOrdersEl = document.getElementById('pendingOrdersCount');
+    
+    if (totalRevenueEl) totalRevenueEl.textContent = 'R$ 0,00';
+    if (paidOrdersEl) paidOrdersEl.textContent = '0';
+    if (pendingOrdersEl) pendingOrdersEl.textContent = '0';
+    
+    updateRestaurantStatusDisplay();
+    
+    // Get today's stats
+    const savedHistory = localStorage.getItem('ordersHistory');
+    const history = savedHistory ? JSON.parse(savedHistory) : [];
+    
+    // Calculate stats
+    let totalRevenue = 0;
+    let totalOrders = 0;
+    let totalCanceled = 0;
+    const itemsSold = {};
+    
+    history.forEach(order => {
+        if (order.paid && !order.canceled) {
+            totalRevenue += order.total;
+            totalOrders++;
+            
+            order.items.forEach(item => {
+                itemsSold[item.name] = (itemsSold[item.name] || 0) + item.quantity;
+            });
+        }
+        if (order.canceled) {
+            totalCanceled++;
+        }
+    });
+    
+    const dayStartTime = localStorage.getItem('dayStartTime') || new Date().toLocaleString('pt-BR');
+    const dayEndTime = new Date().toLocaleString('pt-BR');
+    
+    // Create stats object
+    const stats = {
+        date: new Date().toLocaleDateString('pt-BR'),
+        startTime: dayStartTime,
+        endTime: dayEndTime,
+        totalOrders: totalOrders,
+        canceledOrders: totalCanceled,
+        totalRevenue: totalRevenue.toFixed(2),
+        topItems: Object.entries(itemsSold)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([name, quantity]) => ({ name, quantity }))
+    };
+    
+    // Ask if user wants to save as file
+    if (confirm('Deseja salvar o relatório do dia como arquivo Excel?')) {
+        downloadStatsAsExcel(stats);
+        alert('✅ Relatório salvo com sucesso!');
+    } else {
+        alert('❌ Restaurante fechado. Resumo do dia não foi salvo.');
+    }
+}
+
+function downloadStatsAsExcel(stats) {
+    // Create CSV data
+    let csvContent = 'data:text/csv;charset=utf-8,';
+    
+    // Header section
+    csvContent += 'RELATÓRIO DO DIA\n';
+    csvContent += '\n';
+    csvContent += 'Data,' + stats.date + '\n';
+    csvContent += 'Horário de Abertura,' + stats.startTime + '\n';
+    csvContent += 'Horário de Fechamento,' + stats.endTime + '\n';
+    csvContent += '\n';
+    
+    // Summary section
+    csvContent += 'RESUMO\n';
+    csvContent += 'Total de Pedidos,' + stats.totalOrders + '\n';
+    csvContent += 'Pedidos Cancelados,' + stats.canceledOrders + '\n';
+    csvContent += 'Receita Total,R$ ' + stats.totalRevenue.toString().replace('.', ',') + '\n';
+    csvContent += '\n';
+    
+    // Top items section
+    csvContent += 'ITENS MAIS VENDIDOS\n';
+    csvContent += 'Produto,Quantidade\n';
+    stats.topItems.forEach(item => {
+        csvContent += '"' + item.name + '",' + item.quantity + '\n';
+    });
+    
+    // Create and download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const today = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `resumo_dia_${today}.csv`);
+    document.body.appendChild(link);
+    
+    link.click();
+    document.body.removeChild(link);
+}
+

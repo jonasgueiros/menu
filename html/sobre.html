@@ -4,8 +4,8 @@
 </header>
 
 <div class="about-layout">
-  <!-- Left scrollable content -->
-  <div class="about-left-content">
+  <!-- Left column -->
+  <div class="about-left">
     <!-- Image section -->
     <div class="about-image-section">
       <img id="aboutImageDisplay" alt="Foto do restaurante">
@@ -25,22 +25,25 @@
     </section>
   </div>
 
-  <!-- Right sticky section -->
-  <div class="about-right-sidebar">
+  <!-- Right column -->
+  <div class="about-right">
     <!-- Contact section -->
     <section class="about-contact-section">
       <h2>📞 Contato</h2>
       <div class="contact-info">
-        <p><strong>Telefone:</strong> (11) 9999-9999</p>
-        <p><strong>Email:</strong> contato@restaurante.com</p>
-        <p><strong>Endereço:</strong> Rua Principal, 123 - Cidade, Estado</p>
+        <p><strong>Telefone:</strong> <span id="aboutPhoneDisplay">(11) 9999-9999</span></p>
+        <p><strong>Email:</strong> <span id="aboutEmailDisplay">contato@restaurante.com</span></p>
+        <p><strong>Endereço:</strong> <span id="aboutAddressDisplay">Rua Principal, 123 - Cidade, Estado</span></p>
         <div class="contact-buttons">
-          <a href="https://instagram.com" target="_blank" class="btn-contact">
+          <a href="https://instagram.com" target="_blank" class="btn-contact" id="aboutInstagramBtn">
             <span>📷 Instagram</span>
           </a>
-          <a href="https://wa.me/5511999999999" target="_blank" class="btn-contact">
+          <a href="https://wa.me/5511999999999" target="_blank" class="btn-contact" id="aboutWhatsappBtn">
             <span>💬 WhatsApp</span>
           </a>
+          <button class="btn-contact" id="feedbackBtn">
+            <span>💭 Deixar Feedback</span>
+          </button>
         </div>
       </div>
     </section>
@@ -49,10 +52,44 @@
     <section class="about-hours-section">
       <h2>🕐 Horário</h2>
       <div class="opening-hours">
-        <p><strong>Seg-Sex:</strong> 11:00 - 22:00</p>
-        <p><strong>Sábado:</strong> 11:00 - 23:00</p>
-        <p><strong>Domingo:</strong> 11:00 - 21:00</p>
+        <p><strong>Seg-Sex:</strong> <span id="aboutHoursMFDisplay">11:00 - 22:00</span></p>
+        <p><strong>Sábado:</strong> <span id="aboutHoursSatDisplay">11:00 - 23:00</span></p>
+        <p><strong>Domingo:</strong> <span id="aboutHoursSunDisplay">11:00 - 21:00</span></p>
       </div>
     </section>
+    </div>
+  </div>
+</div>
+
+<!-- Developer Credit Bar -->
+<div class="developer-credit">
+  <span>Developed by <a href="https://jonasgueiros.github.io/me/" target="_blank">Jonas Gueiros</a></span>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="modal" style="display:none;">
+  <div class="modal-content feedback-modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h2>💭 Deixar Feedback</h2>
+      <span class="modal-close" onclick="closeFeedbackModal()">&times;</span>
+    </div>
+    <form class="feedback-form">
+      <div class="feedback-type">
+        <label>Seu feedback é sobre:</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="feedbackType" value="restaurante" required>
+            <span>🍽️ Restaurante</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="feedbackType" value="sistema" required>
+            <span>💻 Sistema</span>
+          </label>
+        </div>
+      </div>
+      <textarea placeholder="Deixe seu comentário..." rows="5" required></textarea>
+      <input type="email" placeholder="Seu email (opcional)">
+      <button type="submit" class="submit-btn">Enviar Feedback</button>
+    </form>
   </div>
 </div>
