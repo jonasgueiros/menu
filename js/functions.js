@@ -83,28 +83,39 @@ function updateCartDisplay() {
     const checkoutBtn = document.getElementById('checkoutBtn');
     const cartPreviewBtn = document.getElementById('cartPreviewBtn');
     const cartBar = document.querySelector('.cart-bar');
+    const cartFab = document.getElementById('cartFab');
+    const cartFabBadge = document.getElementById('cartFabBadge');
     
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCount.textContent = totalItems;
+    if (cartCount) cartCount.textContent = totalItems;
+    if (cartFabBadge) cartFabBadge.textContent = totalItems;
     
     let total = cart.reduce((sum, item) => {
         const price = parseBRL(item.priceBRL);
         return sum + (price * item.quantity);
     }, 0);
     
-    cartTotal.textContent = formatBRL(total);
+    if (cartTotal) cartTotal.textContent = formatBRL(total);
     
-    checkoutBtn.disabled = cart.length === 0;
+    if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
     if (cartPreviewBtn) {
         cartPreviewBtn.disabled = cart.length === 0;
     }
     
-    // Show/hide cart bar based on cart contents
+    // Show/hide cart bar and fab based on cart contents
     if (cartBar) {
         if (cart.length === 0) {
             cartBar.classList.add('hidden');
         } else {
             cartBar.classList.remove('hidden');
+        }
+    }
+    
+    if (cartFab) {
+        if (cart.length === 0) {
+            cartFab.classList.add('hidden');
+        } else {
+            cartFab.classList.remove('hidden');
         }
     }
 }

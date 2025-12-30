@@ -253,38 +253,63 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Floating Cart Button for Mobile */
+.cart-fab {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 65px;
+    height: 65px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.cart-fab:active {
+    transform: scale(0.95);
+}
+
+.cart-fab-icon {
+    font-size: 1.8em;
+    color: white;
+}
+
+.cart-fab-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+    font-weight: 700;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 @media (max-width: 768px) {
     .cart-bar {
-        height: 70px;
-        padding: 0 15px;
-        left: 0;
+        display: none !important; /* Force hide the bar on mobile, even without hidden class */
     }
 
-    .cart-content {
-        flex-wrap: wrap;
-        gap: 10px;
+    .cart-fab {
+        display: flex; /* Show floating button on mobile */
     }
 
-    .cart-items-count {
-        font-size: 0.95em;
-        flex: 1;
-    }
-
-    .cart-total {
-        font-size: 1.1em;
-        flex: 1;
-        text-align: right;
-    }
-
-    .cart-buttons {
-        width: 100%;
-        gap: 8px;
-    }
-
-    .cart-btn {
-        padding: 10px 15px;
-        font-size: 0.85em;
-        flex: 1;
+    .cart-fab.hidden {
+        display: none;
     }
 
     .cart-modal-content {
@@ -294,26 +319,21 @@
 }
 
 @media (max-width: 480px) {
-    .cart-bar {
-        height: 65px;
-        padding: 0 10px;
+    .cart-fab {
+        width: 60px;
+        height: 60px;
+        bottom: 15px;
+        right: 15px;
     }
 
-    .cart-items-count {
-        font-size: 0.85em;
+    .cart-fab-icon {
+        font-size: 1.6em;
     }
 
-    .cart-total {
-        font-size: 1em;
-    }
-
-    .cart-btn {
-        padding: 8px 12px;
-        font-size: 0.75em;
-    }
-
-    .cart-preview-btn {
-        display: none;
+    .cart-fab-badge {
+        width: 26px;
+        height: 26px;
+        font-size: 0.7em;
     }
 
     .cart-modal-content {
