@@ -155,7 +155,7 @@
         grid-template-columns: 1fr;
         height: auto;
         gap: 16px;
-        padding-bottom: 30px;
+        padding-bottom: 70px; /* Increased padding to account for developer credit */
     }
 
     .about-right-sidebar {
@@ -201,7 +201,7 @@
 
     .about-layout {
         gap: 12px;
-        padding-bottom: 20px;
+        padding-bottom: 60px; /* Padding for developer credit on small mobile */
     }
 
     .about-left {
