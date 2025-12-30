@@ -14,24 +14,44 @@ function addToCart(item) {
         alert('Este item está em falta no momento.');
         return;
     }
-    const note = prompt(`Deseja adicionar uma nota para ${item.name}?`, '');
+
+    // Ask for quantity
+    const quantityStr = prompt(`Quantas unidades de "${item.name}" deseja adicionar?`, '1');
+    if (!quantityStr || quantityStr.trim() === '') {
+        return; // User cancelled
+    }
+
+    const quantity = parseInt(quantityStr);
+    if (isNaN(quantity) || quantity < 1) {
+        alert('❌ Quantidade inválida! Por favor, insira um número maior que zero.');
+        return;
+    }
+
+    if (quantity > 99) {
+        alert('❌ Quantidade máxima é 99 unidades.');
+        return;
+    }
+
+    // Ask for note
+    const note = prompt(`Deseja adicionar uma nota para ${item.name}? (opcional)`, '');
     
     const cartItem = {
         ...item,
         cartId: Date.now() + Math.random(),
         note: note || '',
-        quantity: 1
+        quantity: quantity
     };
     
-    // Check if item already exists in cart
+    // Check if item already exists in cart with same note
     const existingItem = cart.find(c => c.id === item.id && c.note === cartItem.note);
     if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += quantity;
     } else {
         cart.push(cartItem);
     }
     
     updateCartDisplay();
+    alert(`✅ ${quantity}x ${item.name} adicionado(s) ao carrinho!`);
 }
 
 function removeFromCart(cartId) {
@@ -40,6 +60,21 @@ function removeFromCart(cartId) {
         cart.splice(index, 1);
     }
     updateCartDisplay();
+}
+
+function updateCartItemQuantity(cartId, newQuantity) {
+    const item = cart.find(c => c.cartId === cartId);
+    if (item) {
+        if (newQuantity < 1) {
+            removeFromCart(cartId);
+        } else if (newQuantity > 99) {
+            alert('❌ Quantidade máxima é 99 unidades.');
+        } else {
+            item.quantity = newQuantity;
+        }
+        updateCartDisplay();
+        displayCartItems();
+    }
 }
 
 function updateCartDisplay() {
@@ -103,7 +138,7 @@ function showConfirmationModal(paymentMethod) {
     const paymentLabels = {
         'dinheiro': '💵 Dinheiro',
         'credito': '💳 Crédito',
-        'debito': '🏧 Débito',
+        'debito': '💳 Débito',
         'pix': '📱 PIX'
     };
     
@@ -156,7 +191,7 @@ function completeCheckout(paymentMethod) {
     const paymentLabels = {
         'dinheiro': '💵 Dinheiro',
         'credito': '💳 Crédito',
-        'debito': '🏧 Débito',
+        'debito': '💳 Débito',
         'pix': '📱 PIX'
     };
     
@@ -179,7 +214,7 @@ function completeCheckout(paymentMethod) {
     const now = new Date();
     const timestamp = now.toLocaleString('pt-BR');
     
-    orderSummary += `\n━━━━━━━━━━━━━━━━━━━━\nTOTAL: ${totalDisplay}\nPagamento: ${paymentLabels[paymentMethod]}\n\nPedido enviado para a cozinha! ✓`;
+    orderSummary += `\n━━━━━━━━━━━━━━━━━━━━\nTOTAL: ${totalDisplay}\nPagamento: ${paymentLabels[paymentMethod]}\n\nPedido enviado para a cozinha! ✔`;
     
     // Store order for staff
     const order = {
@@ -249,7 +284,7 @@ function showReceiptModal(order) {
             
             <div style="text-align: center; border-top: 1px dashed #999; padding-top: 10px; color: #666; font-size: 12px;">
                 <p style="margin: 0;">Obrigado pela preferência!</p>
-                <p style="margin: 5px 0 0 0;">✓ Pedido enviado para a cozinha</p>
+                <p style="margin: 5px 0 0 0;">✔ Pedido enviado para a cozinha</p>
             </div>
         </div>
     `;
@@ -283,7 +318,7 @@ function saveReceiptAsPDF(order) {
     };
     
     html2pdf().set(opt).from(element).save();
-    alert('Comprovante salvo como PDF! ✓');
+    alert('Comprovante salvo como PDF! ✔');
     closeReceiptModal();
 }
 
@@ -300,7 +335,7 @@ function saveReceiptAsImage(order) {
         link.href = canvas.toDataURL('image/png');
         link.download = `comprovante_${order.id}.png`;
         link.click();
-        alert('Comprovante salvo como imagem! ✓');
+        alert('Comprovante salvo como imagem! ✔');
         closeReceiptModal();
     });
 }
@@ -365,11 +400,15 @@ function displayCartItems() {
         itemRow.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-quantity">Quantidade: ${item.quantity}</div>
                 ${item.note ? `<div style="font-size: 0.85em; color: #ff9800; margin-top: 4px;">📝 ${item.note}</div>` : ''}
+                <div class="cart-item-quantity-controls">
+                    <button class="qty-btn" onclick="updateCartItemQuantity(${item.cartId}, ${item.quantity - 1})">-</button>
+                    <span class="qty-display">${item.quantity}</span>
+                    <button class="qty-btn" onclick="updateCartItemQuantity(${item.cartId}, ${item.quantity + 1})">+</button>
+                </div>
             </div>
             <div class="cart-item-price">R$ ${itemTotal.toFixed(2).replace('.', ',')}</div>
-            <button class="cart-item-remove" onclick="removeItemFromCart(${item.cartId})">Remover</button>
+            <button class="cart-item-remove" onclick="removeItemFromCart(${item.cartId})">🗑️</button>
         `;
         cartItemsList.appendChild(itemRow);
     });
@@ -378,12 +417,18 @@ function displayCartItems() {
 }
 
 function removeItemFromCart(cartId) {
-    const index = cart.findIndex(item => item.cartId === cartId);
-    if (index > -1) {
-        cart.splice(index, 1);
+    const item = cart.find(c => c.cartId === cartId);
+    if (!item) return;
+    
+    const shouldRemove = confirm(`Remover "${item.name}" do carrinho?`);
+    if (shouldRemove) {
+        const index = cart.findIndex(c => c.cartId === cartId);
+        if (index > -1) {
+            cart.splice(index, 1);
+        }
+        updateCartDisplay();
+        displayCartItems();
     }
-    updateCartDisplay();
-    displayCartItems();
 }
 
 // Store current item for modal confirmation
@@ -430,23 +475,39 @@ function confirmAddToCart() {
     const noteEl = document.getElementById('itemDetailsNote');
     const note = noteEl?.value || '';
     
+    // Ask for quantity on mobile too
+    const quantityStr = prompt(`Quantas unidades de "${currentItemForModal.name}" deseja adicionar?`, '1');
+    if (!quantityStr || quantityStr.trim() === '') {
+        return; // User cancelled
+    }
+
+    const quantity = parseInt(quantityStr);
+    if (isNaN(quantity) || quantity < 1) {
+        alert('❌ Quantidade inválida! Por favor, insira um número maior que zero.');
+        return;
+    }
+
+    if (quantity > 99) {
+        alert('❌ Quantidade máxima é 99 unidades.');
+        return;
+    }
+    
     const cartItem = {
         ...currentItemForModal,
         cartId: Date.now() + Math.random(),
         note: note,
-        quantity: 1
+        quantity: quantity
     };
     
     // Check if item already exists in cart with same note
     const existingItem = cart.find(c => c.id === currentItemForModal.id && c.note === cartItem.note);
     if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += quantity;
     } else {
         cart.push(cartItem);
     }
     
     updateCartDisplay();
     closeItemDetailsModal();
-    alert('✅ Item adicionado ao carrinho!');
+    alert(`✅ ${quantity}x ${currentItemForModal.name} adicionado(s) ao carrinho!`);
 }
-

@@ -128,22 +128,82 @@ document.addEventListener('DOMContentLoaded', () => {
               <h1 id="aboutNameDisplay">Sobre o Restaurante</h1>
             <p id="aboutSloganDisplay" style="color: var(--muted); margin-top:4px;"></p>
             </header>
-            <div class="about-hero" style="margin:8px 0 16px 0;">
-              <img id="aboutImageDisplay" alt="Foto do restaurante" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;display:none;">
+            <div class="about-layout">
+              <div class="about-left">
+                <div class="about-image-section">
+                  <img id="aboutImageDisplay" alt="Foto do restaurante">
+                </div>
+                <section>
+                  <h2>História</h2>
+                  <p id="aboutHistoryDisplay">Conteúdo não definido ainda.</p>
+                </section>
+                <section>
+                  <h2>Nossa Comida</h2>
+                  <p id="aboutFoodDisplay">Conteúdo não definido ainda.</p>
+                </section>
+                <section>
+                  <h2>Equipe</h2>
+                  <p id="aboutStaffDisplay">Conteúdo não definido ainda.</p>
+                </section>
+              </div>
+              <div class="about-right">
+                <section class="about-contact-section">
+                  <h2>📞 Contato</h2>
+                  <div class="contact-info">
+                    <p><strong>Telefone:</strong> <span id="aboutPhoneDisplay">(11) 9999-9999</span></p>
+                    <p><strong>Email:</strong> <span id="aboutEmailDisplay">contato@restaurante.com</span></p>
+                    <p><strong>Endereço:</strong> <span id="aboutAddressDisplay">Rua Principal, 123 - Cidade, Estado</span></p>
+                    <div class="contact-buttons">
+                      <a href="https://instagram.com" target="_blank" class="btn-contact" id="aboutInstagramBtn">
+                        <span>📷 Instagram</span>
+                      </a>
+                      <a href="https://wa.me/5511999999999" target="_blank" class="btn-contact" id="aboutWhatsappBtn">
+                        <span>💬 WhatsApp</span>
+                      </a>
+                      <button class="btn-contact" id="feedbackBtn">
+                        <span>💭 Deixar Feedback</span>
+                      </button>
+                    </div>
+                  </div>
+                </section>
+                <section class="about-hours-section">
+                  <h2>🕐 Horário</h2>
+                  <div class="opening-hours">
+                    <p><strong>Seg-Sex:</strong> <span id="aboutHoursMFDisplay">11:00 - 22:00</span></p>
+                    <p><strong>Sábado:</strong> <span id="aboutHoursSatDisplay">11:00 - 23:00</span></p>
+                    <p><strong>Domingo:</strong> <span id="aboutHoursSunDisplay">11:00 - 21:00</span></p>
+                  </div>
+                </section>
+              </div>
             </div>
-            <div class="about-content" style="display:grid; gap:16px;">
-              <section>
-                <h2>História</h2>
-                <p id="aboutHistoryDisplay">Conteúdo não definido ainda.</p>
-              </section>
-              <section>
-                <h2>Nossa Comida</h2>
-                <p id="aboutFoodDisplay">Conteúdo não definido ainda.</p>
-              </section>
-              <section>
-                <h2>Equipe</h2>
-                <p id="aboutStaffDisplay">Conteúdo não definido ainda.</p>
-              </section>
+            <div class="developer-credit">
+              <span>Developed by <a href="https://jonasgueiros.github.io/me/" target="_blank">Jonas Gueiros</a></span>
+            </div>
+            <div id="feedbackModal" class="modal" style="display:none;">
+              <div class="modal-content feedback-modal" style="max-width:400px;">
+                <div class="modal-header">
+                  <h2>💭 Deixar Feedback</h2>
+                  <span class="modal-close" onclick="closeFeedbackModal()">&times;</span>
+                </div>
+                <form class="feedback-form">
+                  <div class="feedback-type">
+                    <label>Seu feedback é sobre:</label>
+                    <div class="radio-group">
+                      <label class="radio-label">
+                        <input type="radio" name="feedbackType" value="restaurante" required>
+                        <span>🍽️ Restaurante</span>
+                      </label>
+                      <label class="radio-label">
+                        <input type="radio" name="feedbackType" value="sistema" required>
+                        <span>💻 Sistema</span>
+                      </label>
+                    </div>
+                  </div>
+                  <textarea placeholder="Deixe seu comentário..." rows="5" required></textarea>
+                  <input type="email" placeholder="Seu email (opcional)">
+                  <button type="submit" class="submit-btn">Enviar Feedback</button>
+                </form>
+              </div>
             </div>
           `;
         default:
@@ -218,36 +278,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Clicking the logo opens the 'Sobre' page
-  const logo = document.querySelector('.logo');
-  if (logo) {
-    logo.style.cursor = 'pointer';
+  const logoContainer = document.querySelector('.logo-container');
+  if (logoContainer) {
+    logoContainer.style.cursor = 'pointer';
     
-    // Load logo from localStorage
-    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
-    if (about.logoDataUrl) {
-      const logoImg = document.createElement('img');
-      logoImg.src = about.logoDataUrl;
-      logoImg.style.maxWidth = '100%';
-      logoImg.style.maxHeight = '100%';
-      logoImg.style.borderRadius = '8px';
-      logo.innerHTML = '';
-      logo.appendChild(logoImg);
-    }
-    
-    logo.addEventListener('click', async () => {
+    logoContainer.addEventListener('click', async () => {
       // Deactivate current active page and buttons
       navButtons.forEach((btn) => btn.classList.remove('active'));
       pages.forEach((page) => page.classList.remove('active'));
+      
       // Activate 'sobre' page
       const targetPage = document.getElementById('sobre-page');
       if (targetPage) {
         targetPage.classList.add('active');
       }
+      
       // Hide cart bar on about page
       const cartBar = document.querySelector('.cart-bar');
       if (cartBar) {
         cartBar.style.display = 'none';
       }
+      
       await initPage('sobre');
     });
   }
@@ -267,14 +318,26 @@ function loadLogos() {
   const logoMobileEl = document.getElementById('logoMobile');
   const logoFallback = document.getElementById('logoFallback');
 
+  // Check if we have any logo
+  const hasLogo = about.logoDataUrl || about.logoMobileDataUrl;
+
   // Load desktop logo
   if (logoDesktopEl && about.logoDataUrl) {
     logoDesktopEl.src = about.logoDataUrl;
-    if (logoFallback) logoFallback.style.display = 'none';
   }
 
-  // Load mobile logo
-  if (logoMobileEl && about.logoMobileDataUrl) {
-    logoMobileEl.src = about.logoMobileDataUrl;
+  // Load mobile logo (or fallback to desktop logo)
+  if (logoMobileEl) {
+    if (about.logoMobileDataUrl) {
+      logoMobileEl.src = about.logoMobileDataUrl;
+    } else if (about.logoDataUrl) {
+      // Fallback to desktop logo if mobile logo not available
+      logoMobileEl.src = about.logoDataUrl;
+    }
+  }
+
+  // Show/hide fallback emoji based on whether we have logos
+  if (logoFallback) {
+    logoFallback.style.display = hasLogo ? 'none' : 'block';
   }
 }
