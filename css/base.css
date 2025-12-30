@@ -40,6 +40,7 @@ body {
     justify-content: center;
     width: 80px;
     height: 80px;
+    position: relative;
 }
 
 .logo-image {
@@ -47,7 +48,9 @@ body {
     max-height: 100%;
     object-fit: contain;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+    position: absolute;
 }
 
 .logo-image:hover {
@@ -57,7 +60,9 @@ body {
 .logo-fallback {
     font-size: 2.5em;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+    position: absolute;
 }
 
 .logo-fallback:hover {

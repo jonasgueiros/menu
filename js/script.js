@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load logos from localStorage
   loadLogos();
 
+  // Add logo animation effect (switch between image and emoji every 10 seconds)
+  startLogoAnimation();
+
   // Mobile: Hide/show top bar on scroll
   if (window.innerWidth <= 768) {
     let lastScrollTop = 0;
@@ -340,4 +343,52 @@ function loadLogos() {
   if (logoFallback) {
     logoFallback.style.display = hasLogo ? 'none' : 'block';
   }
+}
+
+// Animate logo - switch between image and emoji every 10 seconds
+function startLogoAnimation() {
+  const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+  const hasLogo = about.logoDataUrl || about.logoMobileDataUrl;
+  
+  // Only animate if we have a logo
+  if (!hasLogo) return;
+  
+  const logoDesktopEl = document.getElementById('logoDesktop');
+  const logoMobileEl = document.getElementById('logoMobile');
+  const logoFallback = document.getElementById('logoFallback');
+  
+  if (!logoDesktopEl || !logoMobileEl || !logoFallback) return;
+  
+  let showingLogo = true;
+  
+  setInterval(() => {
+    if (showingLogo) {
+      // Switch to emoji - fade out logos, fade in emoji
+      logoDesktopEl.style.opacity = '0';
+      logoMobileEl.style.opacity = '0';
+      setTimeout(() => {
+        logoDesktopEl.style.visibility = 'hidden';
+        logoMobileEl.style.visibility = 'hidden';
+        logoFallback.style.display = 'block';
+        logoFallback.style.visibility = 'visible';
+        setTimeout(() => {
+          logoFallback.style.opacity = '1';
+        }, 50);
+      }, 300);
+    } else {
+      // Switch back to logo - fade out emoji, fade in logos
+      logoFallback.style.opacity = '0';
+      setTimeout(() => {
+        logoFallback.style.visibility = 'hidden';
+        logoFallback.style.display = 'none';
+        logoDesktopEl.style.visibility = 'visible';
+        logoMobileEl.style.visibility = 'visible';
+        setTimeout(() => {
+          logoDesktopEl.style.opacity = '1';
+          logoMobileEl.style.opacity = '1';
+        }, 50);
+      }, 300);
+    }
+    showingLogo = !showingLogo;
+  }, 10000); // Every 10 seconds
 }

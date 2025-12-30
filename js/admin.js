@@ -38,9 +38,6 @@ function initializeAdminPage() {
     }, 2000);
 }
 
-
-
-
 function updateAdminOrders() {
     const ordersList = document.getElementById('ordersList');
     if (!ordersList) return;
@@ -66,7 +63,7 @@ function updateAdminOrders() {
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
             if (item.note) {
-                itemsHTML += `<br><em style="color: #ff9800;">📝 Nota: ${item.note}</em>`;
+                itemsHTML += `<br><em style="color: #ff9800;">🔖 Nota: ${item.note}</em>`;
             }
             itemsHTML += '</li>';
         });
@@ -75,7 +72,7 @@ function updateAdminOrders() {
         const paymentLabels = {
             'dinheiro': '💵 Dinheiro',
             'credito': '💳 Crédito',
-            'debito': '🏧 Débito',
+            'debito': '🧾 Débito',
             'pix': '📱 PIX'
         };
         
@@ -276,15 +273,46 @@ function displayPaymentHistory() {
     const savedHistory = localStorage.getItem('ordersHistory');
     const history = savedHistory ? JSON.parse(savedHistory) : [];
     
-    if (history.length === 0) {
+    // Filter only paid orders (not canceled)
+    const paidOrders = history.filter(order => order.paid && !order.canceled);
+    
+    if (paidOrders.length === 0) {
         historyList.innerHTML = '<p class="empty-state">Nenhum pedido pago registrado</p>';
         return;
     }
     
+    // Calculate total revenue
+    const totalRevenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
+    
     historyList.innerHTML = '';
     
+    // Add header with toggle buttons and total
+    const headerDiv = document.createElement('div');
+    headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border);';
+    headerDiv.innerHTML = `
+        <div style="display: flex; gap: 10px;">
+            <button class="history-view-btn active" data-view="orders" onclick="switchHistoryView('orders')" 
+                style="padding: 10px 20px; border: 2px solid var(--primary); background: var(--primary); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                📋 Pedidos
+            </button>
+            <button class="history-view-btn" data-view="items" onclick="switchHistoryView('items')" 
+                style="padding: 10px 20px; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                🍽️ Itens Vendidos
+            </button>
+        </div>
+        <div style="font-size: 1.2em; font-weight: 700; color: var(--primary);">
+            💰 Total: R$ ${totalRevenue.toFixed(2).replace('.', ',')}
+        </div>
+    `;
+    historyList.appendChild(headerDiv);
+    
+    // Create container for orders view
+    const ordersContainer = document.createElement('div');
+    ordersContainer.id = 'historyOrdersView';
+    ordersContainer.style.display = 'block';
+    
     // Sort history by date (newest first)
-    const sortedHistory = [...history].sort((a, b) => {
+    const sortedHistory = [...paidOrders].sort((a, b) => {
         return new Date(b.paidDate || b.timestamp) - new Date(a.paidDate || a.timestamp);
     });
     
@@ -297,7 +325,7 @@ function displayPaymentHistory() {
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
             if (item.note) {
-                itemsHTML += `<br><em style="color: #ff9800;">📝 Nota: ${item.note}</em>`;
+                itemsHTML += `<br><em style="color: #ff9800;">🔖 Nota: ${item.note}</em>`;
             }
             itemsHTML += '</li>';
         });
@@ -306,7 +334,7 @@ function displayPaymentHistory() {
         const paymentLabels = {
             'dinheiro': '💵 Dinheiro',
             'credito': '💳 Crédito',
-            'debito': '🏧 Débito',
+            'debito': '🧾 Débito',
             'pix': '📱 PIX'
         };
         
@@ -322,8 +350,117 @@ function displayPaymentHistory() {
             ${itemsHTML}
             <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
         `;
-        historyList.appendChild(orderCard);
+        ordersContainer.appendChild(orderCard);
     });
+    
+    historyList.appendChild(ordersContainer);
+    
+    // Create container for items view
+    const itemsContainer = document.createElement('div');
+    itemsContainer.id = 'historyItemsView';
+    itemsContainer.style.display = 'none';
+    
+    displayHistoryItemsList(paidOrders, itemsContainer);
+    
+    historyList.appendChild(itemsContainer);
+}
+
+function displayHistoryItemsList(orders, container) {
+    // Calculate items sold with totals
+    const itemsData = {};
+    
+    orders.forEach(order => {
+        order.items.forEach(item => {
+            const itemName = item.name;
+            if (!itemsData[itemName]) {
+                itemsData[itemName] = {
+                    quantity: 0,
+                    totalRevenue: 0,
+                    prices: []
+                };
+            }
+            
+            itemsData[itemName].quantity += item.quantity;
+            
+            // Parse price from string like "R$ 15,00"
+            const priceValue = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
+            itemsData[itemName].totalRevenue += priceValue * item.quantity;
+            itemsData[itemName].prices.push(priceValue);
+        });
+    });
+    
+    // Sort by quantity (most sold first)
+    const sortedItems = Object.entries(itemsData)
+        .sort((a, b) => b[1].quantity - a[1].quantity);
+    
+    container.innerHTML = '';
+    
+    sortedItems.forEach(([itemName, data], index) => {
+        const itemCard = document.createElement('div');
+        itemCard.className = 'order-card';
+        itemCard.style.borderLeft = '4px solid #4CAF50';
+        
+        let medal = '';
+        if (index === 0) medal = '🥇';
+        else if (index === 1) medal = '🥈';
+        else if (index === 2) medal = '🥉';
+        else medal = `#${index + 1}`;
+        
+        const avgPrice = data.totalRevenue / data.quantity;
+        
+        itemCard.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1;">
+                    <div class="order-header" style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5em;">${medal}</span>
+                        <span>${itemName}</span>
+                    </div>
+                    <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <div style="background: #f0f4ff; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 0.85em; color: #666;">Quantidade Vendida</div>
+                            <div style="font-size: 1.3em; font-weight: 700; color: var(--primary);">${data.quantity} unidades</div>
+                        </div>
+                        <div style="background: #f0f4ff; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 0.85em; color: #666;">Receita Total</div>
+                            <div style="font-size: 1.3em; font-weight: 700; color: #4CAF50;">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</div>
+                        </div>
+                        <div style="background: #f0f4ff; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 0.85em; color: #666;">Preço Médio</div>
+                            <div style="font-size: 1.3em; font-weight: 700; color: #667eea;">R$ ${avgPrice.toFixed(2).replace('.', ',')}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(itemCard);
+    });
+}
+
+function switchHistoryView(view) {
+    const ordersView = document.getElementById('historyOrdersView');
+    const itemsView = document.getElementById('historyItemsView');
+    
+    // Update button styles
+    document.querySelectorAll('.history-view-btn').forEach(btn => {
+        if (btn.dataset.view === view) {
+            btn.style.background = 'var(--primary)';
+            btn.style.color = 'white';
+            btn.classList.add('active');
+        } else {
+            btn.style.background = 'white';
+            btn.style.color = 'var(--primary)';
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Toggle views
+    if (view === 'orders') {
+        ordersView.style.display = 'block';
+        itemsView.style.display = 'none';
+    } else {
+        ordersView.style.display = 'none';
+        itemsView.style.display = 'block';
+    }
 }
 
 // Page switching function for sidebar navigation
@@ -390,7 +527,7 @@ function displayAllOrders() {
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
             if (item.note) {
-                itemsHTML += `<br><em style="color: #ff9800;">📝 Nota: ${item.note}</em>`;
+                itemsHTML += `<br><em style="color: #ff9800;">🔖 Nota: ${item.note}</em>`;
             }
             itemsHTML += '</li>';
         });
@@ -399,7 +536,7 @@ function displayAllOrders() {
         const paymentLabels = {
             'dinheiro': '💵 Dinheiro',
             'credito': '💳 Crédito',
-            'debito': '🏧 Débito',
+            'debito': '🧾 Débito',
             'pix': '📱 PIX'
         };
         
@@ -658,4 +795,3 @@ function downloadStatsAsExcel(stats) {
     link.click();
     document.body.removeChild(link);
 }
-
