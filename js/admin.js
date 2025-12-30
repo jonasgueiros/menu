@@ -319,8 +319,14 @@ function displayPaymentHistory() {
                 🍽️ Itens Vendidos
             </button>
         </div>
-        <div style="font-size: 1.2em; font-weight: 700; color: var(--primary);">
-            💰 Total: R$ ${totalRevenue.toFixed(2).replace('.', ',')}
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 1.2em; font-weight: 700; color: var(--primary);">
+                💰 Total: R$ ${totalRevenue.toFixed(2).replace('.', ',')}
+            </div>
+            <button onclick="exportHistoryToExcel()" 
+                style="padding: 10px 20px; border: 2px solid #4CAF50; background: #4CAF50; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                📊 Exportar para Excel
+            </button>
         </div>
     `;
     historyList.appendChild(headerDiv);
@@ -849,6 +855,100 @@ function downloadStatsAsExcel(stats) {
     link.setAttribute('download', `resumo_dia_${today}.csv`);
     document.body.appendChild(link);
     
+        link.click();
+    document.body.removeChild(link);
+}
+
+// Export history to Excel
+function exportHistoryToExcel() {
+    const savedHistory = localStorage.getItem('ordersHistory');
+    const history = savedHistory ? JSON.parse(savedHistory) : [];
+    
+    // Filter only paid orders
+    const paidOrders = history.filter(order => order.paid && !order.canceled);
+    
+    if (paidOrders.length === 0) {
+        alert('❌ Não há histórico para exportar.');
+        return;
+    }
+    
+    // Calculate items sold with totals
+    const itemsData = {};
+    let totalRevenue = 0;
+    
+    paidOrders.forEach(order => {
+        totalRevenue += order.total;
+        order.items.forEach(item => {
+            const itemName = item.name;
+            if (!itemsData[itemName]) {
+                itemsData[itemName] = {
+                    quantity: 0,
+                    totalRevenue: 0
+                };
+            }
+            
+            itemsData[itemName].quantity += item.quantity;
+            
+            // Parse price from string like "R$ 15,00"
+            const priceValue = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
+            itemsData[itemName].totalRevenue += priceValue * item.quantity;
+        });
+    });
+    
+    // Sort items by quantity
+    const sortedItems = Object.entries(itemsData)
+        .sort((a, b) => b[1].quantity - a[1].quantity);
+    
+    // Create CSV content
+    let csvContent = 'data:text/csv;charset=utf-8,';
+    
+    // Header
+    csvContent += 'RELATÓRIO DE HISTÓRICO COMPLETO\n';
+    csvContent += '\n';
+    csvContent += 'Data de Exportação,' + new Date().toLocaleDateString('pt-BR') + '\n';
+    csvContent += 'Total de Pedidos Pagos,' + paidOrders.length + '\n';
+    csvContent += 'Receita Total,R$ ' + totalRevenue.toFixed(2).replace('.', ',') + '\n';
+    csvContent += '\n';
+    
+    // Orders section
+    csvContent += '=== PEDIDOS PAGOS ===\n';
+    csvContent += 'ID,Data/Hora,Tipo,Detalhes,Total,Pagamento\n';
+    
+    paidOrders.forEach(order => {
+        let typeDetails = '';
+        if (order.orderType === 'local' && order.tableNumber) {
+            typeDetails = `Local - Mesa ${order.tableNumber}`;
+        } else if (order.orderType === 'delivery' && order.deliveryAddress) {
+            const addr = order.deliveryAddress;
+            typeDetails = `Delivery - ${addr.street} ${addr.number} ${addr.neighborhood}`;
+        }
+        
+        const itemsList = order.items.map(item => `${item.name} (x${item.quantity})`).join('; ');
+        
+        csvContent += `${order.id},"${order.paidDate || order.timestamp}","${typeDetails}","${itemsList}",R$ ${order.total.toFixed(2).replace('.', ',')},"${order.paymentLabel}"\n`;
+    });
+    
+    csvContent += '\n';
+    
+    // Items sold section
+    csvContent += '=== ITENS VENDIDOS ===\n';
+    csvContent += 'Posição,Produto,Quantidade Vendida,Receita Total,Preço Médio\n';
+    
+    sortedItems.forEach(([itemName, data], index) => {
+        const avgPrice = data.totalRevenue / data.quantity;
+        csvContent += `${index + 1},"${itemName}",${data.quantity},R$ ${data.totalRevenue.toFixed(2).replace('.', ',')},R$ ${avgPrice.toFixed(2).replace('.', ',')}\n`;
+    });
+    
+    // Create and download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const today = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `historico_completo_${today}.csv`);
+    document.body.appendChild(link);
+    
     link.click();
     document.body.removeChild(link);
+    
+    alert('✅ Histórico exportado com sucesso!');
 }

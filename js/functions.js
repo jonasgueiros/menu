@@ -499,8 +499,8 @@ function showReceiptModal(order) {
     receiptModal.classList.add('show');
     
     // Handle save buttons
-    document.getElementById('savePdfBtn').onclick = () => {
-        saveReceiptAsPDF(order);
+    document.getElementById('shareWhatsappBtn').onclick = () => {
+        shareReceiptViaWhatsApp(order);
     };
     
     document.getElementById('saveImageBtn').onclick = () => {
@@ -513,18 +513,74 @@ function closeReceiptModal() {
     receiptModal.classList.remove('show');
 }
 
-function saveReceiptAsPDF(order) {
+function shareReceiptViaWhatsApp(order) {
     const element = document.getElementById('receiptContent');
-    const opt = {
-        margin: 10,
-        filename: `comprovante_${order.id}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
     
-    html2pdf().set(opt).from(element).save();
-    alert('Comprovante salvo como PDF! ✔');
+    // Get restaurant WhatsApp from aboutInfo
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const whatsappNumber = about.whatsapp || '5511999999999';
+    
+    html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+    }).then(canvas => {
+        canvas.toBlob((blob) => {
+            // Create file from blob
+            const file = new File([blob], `comprovante_${order.id}.png`, { type: 'image/png' });
+            
+            // Create message text
+            let orderTypeText = '';
+            if (order.orderType === 'local' && order.tableNumber) {
+                orderTypeText = `🍽️ Mesa ${order.tableNumber}`;
+            } else if (order.orderType === 'delivery' && order.deliveryAddress) {
+                const addr = order.deliveryAddress;
+                orderTypeText = `🚗 Delivery para: ${addr.street}, ${addr.number}, ${addr.neighborhood}`;
+            }
+            
+            const message = encodeURIComponent(
+                `📋 *Comprovante de Pedido #${order.id}*\n\n` +
+                `${orderTypeText}\n` +
+                `💰 Total: ${order.totalDisplay}\n` +
+                `💳 Pagamento: ${order.paymentLabel}\n\n` +
+                `Segue comprovante em anexo.`
+            );
+            
+            // Check if Web Share API is available (mobile)
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                    files: [file],
+                    title: `Pedido #${order.id}`,
+                    text: `Comprovante do pedido #${order.id}`
+                }).then(() => {
+                    alert('✅ Comprovante compartilhado com sucesso!');
+                    closeReceiptModal();
+                }).catch((error) => {
+                    console.error('Error sharing:', error);
+                    // Fallback to WhatsApp Web link
+                    openWhatsAppWeb(whatsappNumber, message);
+                });
+            } else {
+                // Fallback to WhatsApp Web link (will open without image)
+                alert('⚠️ Compartilhamento direto não disponível. Abrindo WhatsApp Web...\n\nPor favor, envie o comprovante manualmente após salvá-lo.');
+                // Save image first
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `comprovante_${order.id}.png`;
+                link.click();
+                // Then open WhatsApp
+                setTimeout(() => {
+                    openWhatsAppWeb(whatsappNumber, message);
+                }, 500);
+            }
+        }, 'image/png');
+    });
+}
+
+function openWhatsAppWeb(number, message) {
+    const url = `https://wa.me/${number}?text=${message}`;
+    window.open(url, '_blank');
     closeReceiptModal();
 }
 

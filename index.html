@@ -38,10 +38,10 @@
                     <span class="icon">🥗</span>
                 </button>
                 <button class="nav-btn" data-page="doces">
-                    <span class="icon">🰀</span>
+                    <span class="icon">🍰</span>
                 </button>
                 <button class="nav-btn" data-page="drinks">
-                    <span class="icon">🷀</span>
+                    <span class="icon">🍷</span>
                 </button>
             </nav>
         </aside>
@@ -277,20 +277,20 @@
     <div class="modal" id="receiptModal">
         <div class="modal-content receipt-modal">
             <div class="modal-header">
-                <h2>💾 Salvar Comprovante</h2>
+                <h2>📱 Compartilhar Comprovante</h2>
                 <span class="modal-close" onclick="closeReceiptModal()">&times;</span>
             </div>
-            <p>Deseja salvar uma cópia do comprovante?</p>
+            <p>Compartilhe o comprovante com o estabelecimento via WhatsApp</p>
             <div id="receiptPreview" class="receipt-preview"></div>
             <div class="receipt-actions">
-                <button class="receipt-btn" id="savePdfBtn">
-                    <span>📄 Salvar como PDF</span>
+                <button class="receipt-btn" id="shareWhatsappBtn">
+                    <span>📱 Enviar para o Restaurante</span>
                 </button>
                 <button class="receipt-btn" id="saveImageBtn">
                     <span>🖼️ Salvar como Imagem</span>
                 </button>
                 <button class="receipt-btn cancel" onclick="closeReceiptModal()">
-                    <span>Não Salvar</span>
+                    <span>Fechar</span>
                 </button>
             </div>
         </div>
@@ -323,7 +323,6 @@
     <script src="js/tabs.js"></script>
     <script src="js/sobre.js"></script>
     <script src="js/script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
