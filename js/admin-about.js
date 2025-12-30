@@ -70,6 +70,21 @@ function initializeAboutFeatures() {
     }
 }
 
+// Toggle table count field visibility based on delivery type
+function toggleTableCountField() {
+    const deliveryType = document.getElementById('aboutDeliveryType')?.value;
+    const tableCountGroup = document.getElementById('tableCountGroup');
+    
+    if (tableCountGroup) {
+        // Hide table count only for "delivery-only"
+        if (deliveryType === 'delivery-only') {
+            tableCountGroup.style.display = 'none';
+        } else {
+            tableCountGroup.style.display = 'grid';
+        }
+    }
+}
+
 // Load existing About info into the admin form
 function loadAboutInfoForm() {
     const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
@@ -86,6 +101,8 @@ function loadAboutInfoForm() {
     const hoursMFEl = document.getElementById('aboutHoursMF');
     const hoursSatEl = document.getElementById('aboutHoursSat');
     const hoursSunEl = document.getElementById('aboutHoursSun');
+    const deliveryTypeEl = document.getElementById('aboutDeliveryType');
+    const tableCountEl = document.getElementById('aboutTableCount');
     const imagePreview = document.getElementById('aboutImagePreview');
     const logoPreview = document.getElementById('aboutLogoPreview');
     const logoMobilePreview = document.getElementById('aboutLogoMobilePreview');
@@ -106,6 +123,11 @@ function loadAboutInfoForm() {
     if (hoursMFEl) hoursMFEl.value = about.hoursMF || '11:00 - 22:00';
     if (hoursSatEl) hoursSatEl.value = about.hoursSat || '11:00 - 23:00';
     if (hoursSunEl) hoursSunEl.value = about.hoursSun || '11:00 - 21:00';
+    if (deliveryTypeEl) deliveryTypeEl.value = about.deliveryType || 'with-delivery';
+    if (tableCountEl) tableCountEl.value = about.tableCount || '';
+    
+    // Toggle table count visibility based on loaded delivery type
+    toggleTableCountField();
     
     if (imagePreview) {
         if (about.imageDataUrl) {
@@ -141,6 +163,9 @@ function loadAboutInfoForm() {
 // Save About info from admin form to localStorage
 function saveAboutInfo(e) {
     e.preventDefault();
+    const deliveryType = document.getElementById('aboutDeliveryType')?.value || 'with-delivery';
+    const tableCount = deliveryType === 'delivery-only' ? '' : (document.getElementById('aboutTableCount')?.value || '');
+    
     const about = {
         name: document.getElementById('aboutName')?.value || '',
         history: document.getElementById('aboutHistory')?.value || '',
@@ -155,6 +180,8 @@ function saveAboutInfo(e) {
         hoursMF: document.getElementById('aboutHoursMF')?.value || '11:00 - 22:00',
         hoursSat: document.getElementById('aboutHoursSat')?.value || '11:00 - 23:00',
         hoursSun: document.getElementById('aboutHoursSun')?.value || '11:00 - 21:00',
+        deliveryType: deliveryType,
+        tableCount: tableCount,
         imageDataUrl: document.getElementById('aboutImagePreview')?.src || '',
         logoDataUrl: document.getElementById('aboutLogoPreview')?.src || '',
         logoMobileDataUrl: document.getElementById('aboutLogoMobilePreview')?.src || ''

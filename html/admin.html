@@ -198,7 +198,7 @@
                         <!-- Dashboard Stats -->
                         <div class="dashboard-stats">
                             <div class="stat-card">
-                                <div class="stat-icon">🏪</div>
+                                <div class="stat-icon">🪧</div>
                                 <div class="stat-content">
                                     <div class="stat-label">Status do Restaurante</div>
                                     <div class="stat-value" id="restaurantStatusText" style="color: #4CAF50;">🟢 Aberto</div>
@@ -289,7 +289,7 @@
                         <form id="aboutForm">
                             <!-- Restaurant Info Section -->
                             <fieldset>
-                                <legend>🏪 Informações do Restaurante</legend>
+                                <legend>🪧 Informações do Restaurante</legend>
                                 <div class="form-group">
                                     <label>Logo/Ícone (Desktop)</label>
                                     <div style="grid-column: 2;">
@@ -359,6 +359,25 @@
                                         <label>WhatsApp (com código do país)</label>
                                         <input type="tel" id="aboutWhatsapp" placeholder="Ex.: 5511999999999">
                                     </div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Business Model Section -->
+                            <fieldset>
+                                <legend>🏪 Modelo de Negócio</legend>
+                                <div class="form-group">
+                                    <label>Tipo de Serviço</label>
+                                    <div style="grid-column: 2;">
+                                        <select id="aboutDeliveryType" onchange="toggleTableCountField()">
+                                            <option value="with-delivery">🍽️ + 🚗 Com Delivery (Presencial + Entrega)</option>
+                                            <option value="delivery-only">🚗 Só Delivery (Apenas Entrega)</option>
+                                            <option value="no-delivery">🍽️ Sem Delivery (Apenas Presencial)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="tableCountGroup">
+                                    <label>Número de Mesas</label>
+                                    <input type="number" id="aboutTableCount" min="0" placeholder="Ex.: 10">
                                 </div>
                             </fieldset>
 

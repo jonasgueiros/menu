@@ -1,5 +1,10 @@
 // Cart and payment functions extracted for main page usage
 
+// Variables to store order details
+let currentOrderType = null; // 'local' or 'delivery'
+let currentTableNumber = null;
+let currentDeliveryAddress = null;
+
 function addToCart(item) {
     // Check if restaurant is closed
     const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
@@ -133,8 +138,136 @@ function checkout() {
         return;
     }
     
-    // Show cart modal for review before payment
+    // Get delivery type from aboutInfo
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const deliveryType = about.deliveryType || 'with-delivery';
+    
+    // Reset order details
+    currentOrderType = null;
+    currentTableNumber = null;
+    currentDeliveryAddress = null;
+    
+    // Show cart modal first for review
     showCartModal();
+}
+
+// Order Type Selection Functions
+function showOrderTypeModal() {
+    const orderTypeModal = document.getElementById('orderTypeModal');
+    orderTypeModal.classList.add('show');
+}
+
+function closeOrderTypeModal() {
+    const orderTypeModal = document.getElementById('orderTypeModal');
+    orderTypeModal.classList.remove('show');
+}
+
+function selectOrderType(type) {
+    currentOrderType = type;
+    closeOrderTypeModal();
+    
+    if (type === 'local') {
+        showTableSelectionModal();
+    } else if (type === 'delivery') {
+        showDeliveryAddressModal();
+    }
+}
+
+// Table Selection Functions
+function showTableSelectionModal() {
+    const tableModal = document.getElementById('tableSelectionModal');
+    const tableInput = document.getElementById('tableNumberInput');
+    if (tableInput) tableInput.value = '';
+    tableModal.classList.add('show');
+}
+
+function closeTableSelectionModal() {
+    const tableModal = document.getElementById('tableSelectionModal');
+    tableModal.classList.remove('show');
+}
+
+function confirmTableSelection() {
+    const tableInput = document.getElementById('tableNumberInput');
+    const tableNumber = parseInt(tableInput?.value);
+    
+    if (!tableNumber || tableNumber < 1) {
+        alert('❌ Por favor, insira um número de mesa válido.');
+        return;
+    }
+    
+    // Get table count from aboutInfo
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const maxTables = parseInt(about.tableCount) || 999;
+    
+    if (tableNumber > maxTables) {
+        alert(`❌ Mesa inválida! O restaurante tem apenas ${maxTables} mesas.`);
+        return;
+    }
+    
+    currentTableNumber = tableNumber;
+    closeTableSelectionModal();
+    
+    // Proceed to payment
+    showPaymentModalForOrder();
+}
+
+// Delivery Address Functions
+function showDeliveryAddressModal() {
+    const addressModal = document.getElementById('deliveryAddressModal');
+    // Clear previous values
+    if (document.getElementById('deliveryStreet')) document.getElementById('deliveryStreet').value = '';
+    if (document.getElementById('deliveryNumber')) document.getElementById('deliveryNumber').value = '';
+    if (document.getElementById('deliveryComplement')) document.getElementById('deliveryComplement').value = '';
+    if (document.getElementById('deliveryNeighborhood')) document.getElementById('deliveryNeighborhood').value = '';
+    if (document.getElementById('deliveryReference')) document.getElementById('deliveryReference').value = '';
+    addressModal.classList.add('show');
+}
+
+function closeDeliveryAddressModal() {
+    const addressModal = document.getElementById('deliveryAddressModal');
+    addressModal.classList.remove('show');
+}
+
+function confirmDeliveryAddress() {
+    const street = document.getElementById('deliveryStreet')?.value.trim();
+    const number = document.getElementById('deliveryNumber')?.value.trim();
+    const complement = document.getElementById('deliveryComplement')?.value.trim();
+    const neighborhood = document.getElementById('deliveryNeighborhood')?.value.trim();
+    const reference = document.getElementById('deliveryReference')?.value.trim();
+    
+    if (!street || !number || !neighborhood) {
+        alert('❌ Por favor, preencha todos os campos obrigatórios (Rua, Número, Bairro).');
+        return;
+    }
+    
+    currentDeliveryAddress = {
+        street,
+        number,
+        complement,
+        neighborhood,
+        reference
+    };
+    
+    closeDeliveryAddressModal();
+    
+    // Proceed to payment
+    showPaymentModalForOrder();
+}
+
+function showPaymentModalForOrder() {
+    const paymentModal = document.getElementById('paymentModal');
+    paymentModal.classList.add('show');
+    
+    // Handle payment button clicks
+    const paymentButtons = paymentModal.querySelectorAll('.payment-btn');
+    paymentButtons.forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const paymentMethod = btn.getAttribute('data-method');
+            closePaymentModal();
+            showConfirmationModal(paymentMethod);
+        };
+    });
 }
 
 function closePaymentModal() {
@@ -161,6 +294,22 @@ function showConfirmationModal(paymentMethod) {
     
     const totalDisplay = formatBRL(total);
     
+    // Build order type info
+    let orderTypeHTML = '';
+    if (currentOrderType === 'local' && currentTableNumber) {
+        orderTypeHTML = `<p style="margin: 6px 0 0 0; color: #666; font-weight: 600;">🍽️ Pedido no Local - Mesa ${currentTableNumber}</p>`;
+    } else if (currentOrderType === 'delivery' && currentDeliveryAddress) {
+        const addr = currentDeliveryAddress;
+        orderTypeHTML = `
+            <p style="margin: 6px 0 0 0; color: #666; font-weight: 600;">🚗 Delivery</p>
+            <p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">
+                ${addr.street}, ${addr.number}${addr.complement ? ' - ' + addr.complement : ''}<br>
+                ${addr.neighborhood}
+                ${addr.reference ? '<br>Ref: ' + addr.reference : ''}
+            </p>
+        `;
+    }
+    
     const previewHTML = `
         <div style="padding: 15px; background: var(--surface); border-radius: 8px; font-size: 13px;">
             <p style="margin: 0 0 10px 0; font-weight: bold;">📋 Resumo do Pedido:</p>
@@ -171,13 +320,14 @@ function showConfirmationModal(paymentMethod) {
                     <div style="margin: 8px 0; padding: 8px; background: var(--bg); border-radius: 4px;">
                         <p style="margin: 0;">${idx + 1}. ${item.name} (x${item.quantity})</p>
                         <p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">R$ ${itemTotal.replace('.', ',')}</p>
-                        ${item.note ? `<p style="margin: 4px 0 0 0; color: #ff9800; font-size: 12px;">📝 ${item.note}</p>` : ''}
+                        ${item.note ? `<p style="margin: 4px 0 0 0; color: #ff9800; font-size: 12px;">🔖 ${item.note}</p>` : ''}
                     </div>
                 `;
             }).join('')}
             <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--border);">
                 <p style="margin: 0; font-weight: bold; font-size: 14px;">Total: ${totalDisplay}</p>
                 <p style="margin: 6px 0 0 0; color: #666;">Pagamento: ${paymentLabels[paymentMethod]}</p>
+                ${orderTypeHTML}
             </div>
         </div>
     `;
@@ -205,6 +355,18 @@ function completeCheckout(paymentMethod) {
         'debito': '💳 Débito',
         'pix': '📱 PIX'
     };
+    
+    // Add order type info
+    if (currentOrderType === 'local' && currentTableNumber) {
+        orderSummary += `🍽️ Pedido no Local - Mesa ${currentTableNumber}\n\n`;
+    } else if (currentOrderType === 'delivery' && currentDeliveryAddress) {
+        const addr = currentDeliveryAddress;
+        orderSummary += `🚗 Delivery\n`;
+        orderSummary += `Endereço: ${addr.street}, ${addr.number}${addr.complement ? ' - ' + addr.complement : ''}\n`;
+        orderSummary += `Bairro: ${addr.neighborhood}\n`;
+        if (addr.reference) orderSummary += `Referência: ${addr.reference}\n`;
+        orderSummary += '\n';
+    }
     
     cart.forEach((item, index) => {
         const price = parseBRL(item.priceBRL);
@@ -242,7 +404,10 @@ function completeCheckout(paymentMethod) {
         paymentLabel: paymentLabels[paymentMethod],
         timestamp: timestamp,
         status: 'pending',
-        paid: false
+        paid: false,
+        orderType: currentOrderType,
+        tableNumber: currentOrderType === 'local' ? currentTableNumber : null,
+        deliveryAddress: currentOrderType === 'delivery' ? currentDeliveryAddress : null
     };
     
     orders.push(order);
@@ -255,11 +420,39 @@ function completeCheckout(paymentMethod) {
     
     cart.length = 0;
     updateCartDisplay();
+    
+    // Reset order details
+    currentOrderType = null;
+    currentTableNumber = null;
+    currentDeliveryAddress = null;
 }
 
 function showReceiptModal(order) {
     const receiptModal = document.getElementById('receiptModal');
     const receiptPreview = document.getElementById('receiptPreview');
+    
+    // Build order type info for receipt
+    let orderTypeHTML = '';
+    if (order.orderType === 'local' && order.tableNumber) {
+        orderTypeHTML = `
+            <div style="margin-bottom: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+                <p style="margin: 0; font-weight: bold;">🍽️ PEDIDO NO LOCAL</p>
+                <p style="margin: 4px 0 0 0; color: #666;">Mesa: ${order.tableNumber}</p>
+            </div>
+        `;
+    } else if (order.orderType === 'delivery' && order.deliveryAddress) {
+        const addr = order.deliveryAddress;
+        orderTypeHTML = `
+            <div style="margin-bottom: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+                <p style="margin: 0; font-weight: bold;">🚗 DELIVERY</p>
+                <p style="margin: 4px 0 0 0; color: #666;">
+                    ${addr.street}, ${addr.number}${addr.complement ? ' - ' + addr.complement : ''}<br>
+                    ${addr.neighborhood}
+                    ${addr.reference ? '<br>Ref: ' + addr.reference : ''}
+                </p>
+            </div>
+        `;
+    }
     
     // Create receipt HTML
     const receiptHTML = `
@@ -273,6 +466,8 @@ function showReceiptModal(order) {
                 <p style="margin: 0; font-size: 12px; color: #666;">📅 ${order.timestamp}</p>
             </div>
             
+            ${orderTypeHTML}
+            
             <div style="margin-bottom: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
                 <p style="margin: 0 0 10px 0; font-weight: bold;">ITENS DO PEDIDO:</p>
                 ${order.items.map((item, idx) => {
@@ -282,7 +477,7 @@ function showReceiptModal(order) {
                         <div style="margin-bottom: 10px;">
                             <p style="margin: 0;">${idx + 1}. ${item.name}</p>
                             <p style="margin: 0; color: #666;">   Qtd: ${item.quantity} x R$ ${price.toFixed(2).replace('.', ',')} = R$ ${itemTotal.replace('.', ',')}</p>
-                            ${item.note ? `<p style="margin: 5px 0 0 0; color: #ff9800;">   📝 Nota: ${item.note}</p>` : ''}
+                            ${item.note ? `<p style="margin: 5px 0 0 0; color: #ff9800;">   🔖 Nota: ${item.note}</p>` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -295,7 +490,7 @@ function showReceiptModal(order) {
             
             <div style="text-align: center; border-top: 1px dashed #999; padding-top: 10px; color: #666; font-size: 12px;">
                 <p style="margin: 0;">Obrigado pela preferência!</p>
-                <p style="margin: 5px 0 0 0;">✔ Pedido enviado para a cozinha</p>
+                <p style="margin: 5px 0 0 0;">✓ Pedido enviado para a cozinha</p>
             </div>
         </div>
     `;
@@ -370,22 +565,26 @@ function proceedToPayment() {
         return;
     }
     
-    // Close cart modal and show payment method modal
+    // Close cart modal
     closeCartModal();
     
-    const paymentModal = document.getElementById('paymentModal');
-    paymentModal.classList.add('show');
+    // Get delivery type from aboutInfo
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const deliveryType = about.deliveryType || 'with-delivery';
     
-    // Handle payment button clicks
-    const paymentButtons = paymentModal.querySelectorAll('.payment-btn');
-    paymentButtons.forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            const paymentMethod = btn.getAttribute('data-method');
-            closePaymentModal();
-            showConfirmationModal(paymentMethod);
-        };
-    });
+    // Determine next step based on delivery type
+    if (deliveryType === 'with-delivery') {
+        // Both options available - ask user to choose
+        showOrderTypeModal();
+    } else if (deliveryType === 'delivery-only') {
+        // Only delivery - go straight to address
+        currentOrderType = 'delivery';
+        showDeliveryAddressModal();
+    } else if (deliveryType === 'no-delivery') {
+        // Only local - go straight to table selection
+        currentOrderType = 'local';
+        showTableSelectionModal();
+    }
 }
 
 function displayCartItems() {
@@ -411,7 +610,7 @@ function displayCartItems() {
         itemRow.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
-                ${item.note ? `<div style="font-size: 0.85em; color: #ff9800; margin-top: 4px;">📝 ${item.note}</div>` : ''}
+                ${item.note ? `<div style="font-size: 0.85em; color: #ff9800; margin-top: 4px;">🔖 ${item.note}</div>` : ''}
                 <div class="cart-item-quantity-controls">
                     <button class="qty-btn" onclick="updateCartItemQuantity(${item.cartId}, ${item.quantity - 1})">-</button>
                     <span class="qty-display">${item.quantity}</span>

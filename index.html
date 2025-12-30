@@ -38,10 +38,10 @@
                     <span class="icon">🥗</span>
                 </button>
                 <button class="nav-btn" data-page="doces">
-                    <span class="icon">🍰</span>
+                    <span class="icon">🰀</span>
                 </button>
                 <button class="nav-btn" data-page="drinks">
-                    <span class="icon">🍷</span>
+                    <span class="icon">🷀</span>
                 </button>
             </nav>
         </aside>
@@ -157,6 +157,73 @@
         </div>
     </div>
 
+    <!-- Order Type Selection Modal (Local vs Delivery) -->
+    <div class="modal" id="orderTypeModal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h2>Tipo de Pedido</h2>
+                <span class="modal-close" onclick="closeOrderTypeModal()">&times;</span>
+            </div>
+            <p>Como deseja fazer o pedido?</p>
+            <div class="payment-options">
+                <button class="payment-btn" onclick="selectOrderType('local')">
+                    <span class="payment-icon">🍽️</span>
+                    <span>Pedindo no Local</span>
+                </button>
+                <button class="payment-btn" onclick="selectOrderType('delivery')">
+                    <span class="payment-icon">🚗</span>
+                    <span>Delivery</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Selection Modal -->
+    <div class="modal" id="tableSelectionModal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h2>Selecionar Mesa</h2>
+                <span class="modal-close" onclick="closeTableSelectionModal()">&times;</span>
+            </div>
+            <p>Qual mesa você está ocupando?</p>
+            <div style="padding: 20px;">
+                <input type="number" id="tableNumberInput" min="1" placeholder="Número da mesa" 
+                    style="width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1em; text-align: center;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="confirmation-btn cancel" onclick="closeTableSelectionModal()">Cancelar</button>
+                <button class="confirmation-btn confirm" onclick="confirmTableSelection()">Confirmar Mesa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Address Modal -->
+    <div class="modal" id="deliveryAddressModal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h2>Endereço de Entrega</h2>
+                <span class="modal-close" onclick="closeDeliveryAddressModal()">&times;</span>
+            </div>
+            <p>Para onde devemos entregar?</p>
+            <div style="padding: 20px; display: grid; gap: 15px;">
+                <input type="text" id="deliveryStreet" placeholder="Rua" 
+                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
+                <input type="text" id="deliveryNumber" placeholder="Número" 
+                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
+                <input type="text" id="deliveryComplement" placeholder="Complemento (opcional)" 
+                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
+                <input type="text" id="deliveryNeighborhood" placeholder="Bairro" 
+                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
+                <textarea id="deliveryReference" placeholder="Ponto de referência (opcional)" rows="2"
+                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em; resize: vertical;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="confirmation-btn cancel" onclick="closeDeliveryAddressModal()">Cancelar</button>
+                <button class="confirmation-btn confirm" onclick="confirmDeliveryAddress()">Confirmar Endereço</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Payment Method Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content payment-modal">
@@ -175,7 +242,7 @@
                     <span>Crédito</span>
                 </button>
                 <button class="payment-btn" data-method="debito">
-                    <span class="payment-icon">🏧</span>
+                    <span class="payment-icon">🧾</span>
                     <span>Débito</span>
                 </button>
                 <button class="payment-btn" data-method="pix">

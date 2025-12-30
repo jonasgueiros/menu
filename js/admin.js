@@ -59,6 +59,24 @@ function updateAdminOrders() {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-card';
         
+        // Build order type info
+        let orderTypeHTML = '';
+        if (order.orderType === 'local' && order.tableNumber) {
+            orderTypeHTML = `<div style="background: #e3f2fd; padding: 8px; border-radius: 5px; margin: 8px 0; color: #1976d2; font-weight: 600;">🍽️ Pedido no Local - Mesa ${order.tableNumber}</div>`;
+        } else if (order.orderType === 'delivery' && order.deliveryAddress) {
+            const addr = order.deliveryAddress;
+            orderTypeHTML = `
+                <div style="background: #fff3e0; padding: 8px; border-radius: 5px; margin: 8px 0; color: #e65100;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">🚗 Delivery</div>
+                    <div style="font-size: 0.85em;">
+                        ${addr.street}, ${addr.number}${addr.complement ? ' - ' + addr.complement : ''}<br>
+                        ${addr.neighborhood}
+                        ${addr.reference ? '<br><em>Ref: ' + addr.reference + '</em>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
         let itemsHTML = '<ul class="order-items">';
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
@@ -81,6 +99,7 @@ function updateAdminOrders() {
         orderCard.innerHTML = `
             <div class="order-header">📦 Pedido #${order.id}</div>
             <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">🕐 ${order.timestamp}</div>
+            ${orderTypeHTML}
             ${itemsHTML}
             <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
             <div class="order-actions" style="display: flex; gap: 10px;">
@@ -321,6 +340,24 @@ function displayPaymentHistory() {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-card';
         
+        // Build order type info
+        let orderTypeHTML = '';
+        if (order.orderType === 'local' && order.tableNumber) {
+            orderTypeHTML = `<div style="background: #e3f2fd; padding: 8px; border-radius: 5px; margin: 8px 0; color: #1976d2; font-weight: 600;">🍽️ Pedido no Local - Mesa ${order.tableNumber}</div>`;
+        } else if (order.orderType === 'delivery' && order.deliveryAddress) {
+            const addr = order.deliveryAddress;
+            orderTypeHTML = `
+                <div style="background: #fff3e0; padding: 8px; border-radius: 5px; margin: 8px 0; color: #e65100;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">🚗 Delivery</div>
+                    <div style="font-size: 0.85em;">
+                        ${addr.street}, ${addr.number}${addr.complement ? ' - ' + addr.complement : ''}<br>
+                        ${addr.neighborhood}
+                        ${addr.reference ? '<br><em>Ref: ' + addr.reference + '</em>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
         let itemsHTML = '<ul class="order-items">';
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
@@ -347,6 +384,7 @@ function displayPaymentHistory() {
                 <span>🕐 Realizado: ${order.timestamp}</span><br>
                 <span style="color: #4CAF50; font-weight: 600;">✓ Pago em: ${paidDate}</span>
             </div>
+            ${orderTypeHTML}
             ${itemsHTML}
             <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
         `;
@@ -523,6 +561,24 @@ function displayAllOrders() {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-card';
         
+        // Build order type info
+        let orderTypeHTML = '';
+        if (order.orderType === 'local' && order.tableNumber) {
+            orderTypeHTML = `<div style="background: #e3f2fd; padding: 8px; border-radius: 5px; margin: 8px 0; color: #1976d2; font-weight: 600;">🍽️ Pedido no Local - Mesa ${order.tableNumber}</div>`;
+        } else if (order.orderType === 'delivery' && order.deliveryAddress) {
+            const addr = order.deliveryAddress;
+            orderTypeHTML = `
+                <div style="background: #fff3e0; padding: 8px; border-radius: 5px; margin: 8px 0; color: #e65100;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">🚗 Delivery</div>
+                    <div style="font-size: 0.85em;">
+                        ${addr.street}, ${addr.number}${addr.complement ? ' - ' + addr.complement : ''}<br>
+                        ${addr.neighborhood}
+                        ${addr.reference ? '<br><em>Ref: ' + addr.reference + '</em>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
         let itemsHTML = '<ul class="order-items">';
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
@@ -551,6 +607,7 @@ function displayAllOrders() {
                 <span>🕐 Realizado: ${order.timestamp}</span>
                 ${order.paid && order.paidDate ? `<br><span style="color: #4CAF50; font-weight: 600;">✓ Pago em: ${order.paidDate}</span>` : ''}
             </div>
+            ${orderTypeHTML}
             ${itemsHTML}
             <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
             ${!order.paid ? `<div style="display: flex; gap: 10px; margin-top: 15px;">
