@@ -26,7 +26,7 @@
     align-items: center;
     width: 100%;
     max-width: 1200px;
-    gap: 30px;
+    gap: 20px;
 }
 
 .cart-items-count {
@@ -36,13 +36,14 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 120px;
 }
 
 .cart-total {
     color: white;
     font-size: 1.4em;
     font-weight: 700;
-    margin-left: auto;
+    min-width: 150px;
 }
 
 #cartTotal {
@@ -61,6 +62,9 @@
     font-size: 0.95em;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .cart-btn:hover {
@@ -80,15 +84,54 @@
     align-items: center;
 }
 
-.cart-preview-btn {
-    background: var(--accent);
-    color: white;
-    border: 2px solid white;
+.cart-order-type-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary);
 }
 
-.cart-preview-btn:hover {
-    background: var(--accent-dark);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+.cart-order-type-btn:hover {
+    background: white;
+}
+
+.cart-checkout-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    font-size: 1.05em;
+    padding: 12px 35px;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.cart-checkout-btn:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+/* Order Type FAB for Mobile */
+.order-type-fab {
+    display: none; /* Hidden on desktop by default */
+    position: fixed;
+    bottom: 95px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.order-type-fab:active {
+    transform: scale(0.95);
+}
+
+.order-type-fab-icon {
+    font-size: 1.6em;
+    color: white;
 }
 
 /* Cart Modal Styles */
@@ -255,7 +298,7 @@
 
 /* Floating Cart Button for Mobile */
 .cart-fab {
-    display: none;
+    display: none; /* Hidden on desktop by default */
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -311,6 +354,10 @@
     .cart-fab.hidden {
         display: none;
     }
+    
+    .order-type-fab {
+        display: flex; /* Show order type FAB on mobile */
+    }
 
     .cart-modal-content {
         max-width: 90vw;
@@ -334,6 +381,17 @@
         width: 26px;
         height: 26px;
         font-size: 0.7em;
+    }
+    
+    .order-type-fab {
+        width: 55px;
+        height: 55px;
+        bottom: 85px;
+        right: 15px;
+    }
+    
+    .order-type-fab-icon {
+        font-size: 1.5em;
     }
 
     .cart-modal-content {

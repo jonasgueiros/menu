@@ -145,13 +145,9 @@
                 <div id="itemDetailsImage" style="width: 100%; height: 150px; background: var(--gradient-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3em; margin-bottom: 15px;"></div>
                 <p id="itemDetailsDescription" style="font-size: 1em; color: var(--text); margin-bottom: 10px; line-height: 1.5;"></p>
                 <p id="itemDetailsPrice" style="font-size: 1.3em; font-weight: 700; color: var(--primary); margin-bottom: 15px;"></p>
-                <div style="border-top: 1px solid var(--border); padding-top: 15px;">
-                    <label style="display: block; margin-bottom: 10px; text-align: left; font-weight: 600;">Deseja adicionar alguma nota? (opcional)</label>
-                    <textarea id="itemDetailsNote" placeholder="Ex: Sem cebola, bem passado..." style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9em; resize: vertical; min-height: 80px;"></textarea>
-                </div>
             </div>
             <div style="display: flex; gap: 10px; padding: 20px; border-top: 1px solid var(--border);">
-                <button class="btn-cancel" onclick="closeItemDetailsModal()" style="flex: 1;">Cancelar</button>
+                <button class="btn-cancel" onclick="closeItemDetailsModal()" style="flex: 1;">Voltar</button>
                 <button class="btn-primary" id="addToCartConfirmBtn" onclick="confirmAddToCart()" style="flex: 1;">Adicionar ao Carrinho</button>
             </div>
         </div>
@@ -296,6 +292,32 @@
         </div>
     </div>
 
+    <!-- Add to Cart Modal (with quantity and note) -->
+    <div class="modal" id="addToCartModal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h2 id="addToCartItemName">Adicionar ao Carrinho</h2>
+                <span class="modal-close" onclick="closeAddToCartModal()">&times;</span>
+            </div>
+            <div style="padding: 20px; display: grid; gap: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Quantidade *</label>
+                    <input type="number" id="addToCartQuantity" min="1" max="99" value="1" 
+                        style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1em; text-align: center;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Observações (opcional)</label>
+                    <textarea id="addToCartNote" placeholder="Ex: Sem cebola, bem passado..." rows="3"
+                        style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 0 20px 20px 20px;">
+                <button class="btn-cancel" onclick="closeAddToCartModal()" style="flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95em; background: var(--surface); color: var(--text); border: 2px solid var(--border);">Cancelar</button>
+                <button class="btn-primary" onclick="confirmAddToCartFromModal()" style="flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95em; background: var(--gradient-primary); color: white;">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Cart Bar at Bottom -->
     <div class="cart-bar hidden">
         <div class="cart-content">
@@ -306,8 +328,10 @@
                 Total: <span id="cartTotal">R$ 0,00</span>
             </div>
             <div class="cart-buttons">
-                <button class="cart-btn cart-preview-btn" id="cartPreviewBtn" onclick="showCartModal()">Ver Carrinho</button>
-                <button class="cart-btn" id="checkoutBtn">Pedir</button>
+                <button class="cart-btn cart-order-type-btn" id="selectOrderTypeBtn" onclick="openOrderTypeSelection()">
+                    <span id="orderTypeButtonText">📍 Selecionar Entrega</span>
+                </button>
+                <button class="cart-btn cart-checkout-btn" id="checkoutBtn" onclick="checkout()">Pedir</button>
             </div>
         </div>
     </div>
@@ -315,6 +339,10 @@
     <button class="cart-fab hidden" id="cartFab" onclick="showCartModal()">
         <span class="cart-fab-icon">🛒</span>
         <span class="cart-fab-badge" id="cartFabBadge">0</span>
+    </button>
+    
+    <button class="order-type-fab" id="orderTypeFab" onclick="openOrderTypeSelection()">
+        <span class="order-type-fab-icon" id="orderTypeFabIcon">📍</span>
     </button>
 
     <script src="js/shared.js"></script>

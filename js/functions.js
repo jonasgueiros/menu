@@ -4,6 +4,7 @@
 let currentOrderType = null; // 'local' or 'delivery'
 let currentTableNumber = null;
 let currentDeliveryAddress = null;
+let currentItemForAddToCart = null; // Store item being added
 
 function addToCart(item) {
     // Check if restaurant is closed
@@ -20,13 +21,49 @@ function addToCart(item) {
         return;
     }
 
-    // Ask for quantity
-    const quantityStr = prompt(`Quantas unidades de "${item.name}" deseja adicionar?`, '1');
-    if (!quantityStr || quantityStr.trim() === '') {
-        return; // User cancelled
-    }
+    // Store item and show modal
+    currentItemForAddToCart = item;
+    showAddToCartModal(item);
+}
 
-    const quantity = parseInt(quantityStr);
+function showAddToCartModal(item) {
+    const modal = document.getElementById('addToCartModal');
+    const nameEl = document.getElementById('addToCartItemName');
+    const quantityEl = document.getElementById('addToCartQuantity');
+    const noteEl = document.getElementById('addToCartNote');
+    
+    if (!modal || !nameEl || !quantityEl || !noteEl) {
+        console.error('Add to cart modal elements not found');
+        return;
+    }
+    
+    nameEl.textContent = item.name;
+    quantityEl.value = 1;
+    noteEl.value = '';
+    
+    modal.classList.add('show');
+}
+
+function closeAddToCartModal() {
+    const modal = document.getElementById('addToCartModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+    currentItemForAddToCart = null;
+}
+
+function confirmAddToCartFromModal() {
+    if (!currentItemForAddToCart) {
+        alert('❌ Erro ao adicionar item. Por favor, tente novamente.');
+        return;
+    }
+    
+    const quantityEl = document.getElementById('addToCartQuantity');
+    const noteEl = document.getElementById('addToCartNote');
+    
+    const quantity = parseInt(quantityEl.value);
+    const note = noteEl.value.trim();
+    
     if (isNaN(quantity) || quantity < 1) {
         alert('❌ Quantidade inválida! Por favor, insira um número maior que zero.');
         return;
@@ -36,19 +73,16 @@ function addToCart(item) {
         alert('❌ Quantidade máxima é 99 unidades.');
         return;
     }
-
-    // Ask for note
-    const note = prompt(`Deseja adicionar uma nota para ${item.name}? (opcional)`, '');
     
     const cartItem = {
-        ...item,
+        ...currentItemForAddToCart,
         cartId: Date.now() + Math.random(),
-        note: note || '',
+        note: note,
         quantity: quantity
     };
     
     // Check if item already exists in cart with same note
-    const existingItem = cart.find(c => c.id === item.id && c.note === cartItem.note);
+    const existingItem = cart.find(c => c.id === currentItemForAddToCart.id && c.note === cartItem.note);
     if (existingItem) {
         existingItem.quantity += quantity;
     } else {
@@ -56,7 +90,23 @@ function addToCart(item) {
     }
     
     updateCartDisplay();
-    alert(`✅ ${quantity}x ${item.name} adicionado(s) ao carrinho!`);
+    closeAddToCartModal();
+    
+    // Show success message
+    alert(`✅ ${quantity}x ${currentItemForAddToCart.name} adicionado(s) ao carrinho!`);
+}
+
+// Order Type Selection in Cart Bar
+function openOrderTypeSelection() {
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const deliveryType = about.deliveryType || 'with-delivery';
+    
+    // Only show modal if both options are available
+    if (deliveryType === 'with-delivery') {
+        showOrderTypeModal();
+    } else {
+        alert('ℹ️ O tipo de entrega já está definido pelo restaurante.');
+    }
 }
 
 function removeFromCart(cartId) {
@@ -86,7 +136,6 @@ function updateCartDisplay() {
     const cartCount = document.getElementById('cartCount');
     const cartTotal = document.getElementById('cartTotal');
     const checkoutBtn = document.getElementById('checkoutBtn');
-    const cartPreviewBtn = document.getElementById('cartPreviewBtn');
     const cartBar = document.querySelector('.cart-bar');
     const cartFab = document.getElementById('cartFab');
     const cartFabBadge = document.getElementById('cartFabBadge');
@@ -103,9 +152,6 @@ function updateCartDisplay() {
     if (cartTotal) cartTotal.textContent = formatBRL(total);
     
     if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
-    if (cartPreviewBtn) {
-        cartPreviewBtn.disabled = cart.length === 0;
-    }
     
     // Show/hide cart bar and fab based on cart contents
     if (cartBar) {
@@ -123,6 +169,16 @@ function updateCartDisplay() {
             cartFab.classList.remove('hidden');
         }
     }
+    
+    // Update order type buttons visibility and selection
+    updateOrderTypeButtons();
+    
+    // Debug log for mobile
+    console.log('Cart updated:', {
+        items: cart.length,
+        totalItems: totalItems,
+        cartFabVisible: cartFab && !cartFab.classList.contains('hidden')
+    });
 }
 
 function checkout() {
@@ -138,20 +194,27 @@ function checkout() {
         return;
     }
     
-    // Get delivery type from aboutInfo
-    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
-    const deliveryType = about.deliveryType || 'with-delivery';
-    
-    // Reset order details
-    currentOrderType = null;
-    currentTableNumber = null;
-    currentDeliveryAddress = null;
-    
-    // Show cart modal first for review
+    // Show cart modal for review
     showCartModal();
 }
 
 // Order Type Selection Functions
+function openOrderTypeSelection() {
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const deliveryType = about.deliveryType || 'with-delivery';
+    
+    // Determine what to show based on delivery type
+    if (deliveryType === 'with-delivery') {
+        showOrderTypeModal();
+    } else if (deliveryType === 'delivery-only') {
+        currentOrderType = 'delivery';
+        showDeliveryAddressModal();
+    } else if (deliveryType === 'no-delivery') {
+        currentOrderType = 'local';
+        showTableSelectionModal();
+    }
+}
+
 function showOrderTypeModal() {
     const orderTypeModal = document.getElementById('orderTypeModal');
     orderTypeModal.classList.add('show');
@@ -166,10 +229,55 @@ function selectOrderType(type) {
     currentOrderType = type;
     closeOrderTypeModal();
     
+    // Proceed to next step instead of just updating button
     if (type === 'local') {
         showTableSelectionModal();
     } else if (type === 'delivery') {
         showDeliveryAddressModal();
+    }
+}
+
+function updateOrderTypeButtonText() {
+    const buttonText = document.getElementById('orderTypeButtonText');
+    if (!buttonText) return;
+    
+    if (currentOrderType === 'local' && currentTableNumber) {
+        buttonText.innerHTML = `🍽️ Mesa ${currentTableNumber}`;
+    } else if (currentOrderType === 'delivery' && currentDeliveryAddress) {
+        buttonText.innerHTML = '🚗 Delivery';
+    } else {
+        buttonText.innerHTML = '📍 Selecionar Entrega';
+    }
+}
+
+function updateOrderTypeFabIcon() {
+    const fabIcon = document.getElementById('orderTypeFabIcon');
+    if (!fabIcon) return;
+    
+    if (currentOrderType === 'local' && currentTableNumber) {
+        fabIcon.textContent = '🍽️';
+    } else if (currentOrderType === 'delivery' && currentDeliveryAddress) {
+        fabIcon.textContent = '🚗';
+    } else {
+        fabIcon.textContent = '📍';
+    }
+}
+
+function updateOrderTypeButtons() {
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const deliveryType = about.deliveryType || 'with-delivery';
+    const selectOrderTypeBtn = document.getElementById('selectOrderTypeBtn');
+    const orderTypeFab = document.getElementById('orderTypeFab');
+    
+    // Update desktop button
+    if (selectOrderTypeBtn) {
+        selectOrderTypeBtn.style.display = 'flex';
+        updateOrderTypeButtonText();
+    }
+    
+    // Update mobile FAB icon (visibility controlled by CSS media queries)
+    if (orderTypeFab) {
+        updateOrderTypeFabIcon();
     }
 }
 
@@ -207,8 +315,11 @@ function confirmTableSelection() {
     currentTableNumber = tableNumber;
     closeTableSelectionModal();
     
-    // Proceed to payment
-    showPaymentModalForOrder();
+    // Update button text and FAB icon
+    updateOrderTypeButtonText();
+    updateOrderTypeFabIcon();
+    
+    alert(`✅ Mesa ${tableNumber} selecionada!\n🍽️ Pedido no Local`);
 }
 
 // Delivery Address Functions
@@ -250,24 +361,11 @@ function confirmDeliveryAddress() {
     
     closeDeliveryAddressModal();
     
-    // Proceed to payment
-    showPaymentModalForOrder();
-}
-
-function showPaymentModalForOrder() {
-    const paymentModal = document.getElementById('paymentModal');
-    paymentModal.classList.add('show');
+    // Update button text and FAB icon
+    updateOrderTypeButtonText();
+    updateOrderTypeFabIcon();
     
-    // Handle payment button clicks
-    const paymentButtons = paymentModal.querySelectorAll('.payment-btn');
-    paymentButtons.forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            const paymentMethod = btn.getAttribute('data-method');
-            closePaymentModal();
-            showConfirmationModal(paymentMethod);
-        };
-    });
+    alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${street}, ${number}\n${neighborhood}`);
 }
 
 function closePaymentModal() {
@@ -421,10 +519,14 @@ function completeCheckout(paymentMethod) {
     cart.length = 0;
     updateCartDisplay();
     
-    // Reset order details
+    // Reset order details and button text
     currentOrderType = null;
     currentTableNumber = null;
     currentDeliveryAddress = null;
+    
+    // Reset order type button text and FAB icon
+    updateOrderTypeButtonText();
+    updateOrderTypeFabIcon();
 }
 
 function showReceiptModal(order) {
@@ -628,19 +730,46 @@ function proceedToPayment() {
     const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
     const deliveryType = about.deliveryType || 'with-delivery';
     
-    // Determine next step based on delivery type
-    if (deliveryType === 'with-delivery') {
-        // Both options available - ask user to choose
-        showOrderTypeModal();
-    } else if (deliveryType === 'delivery-only') {
-        // Only delivery - go straight to address
-        currentOrderType = 'delivery';
-        showDeliveryAddressModal();
-    } else if (deliveryType === 'no-delivery') {
-        // Only local - go straight to table selection
-        currentOrderType = 'local';
-        showTableSelectionModal();
+    // Check if order type and details are already set
+    if ((currentOrderType === 'local' && currentTableNumber) || 
+        (currentOrderType === 'delivery' && currentDeliveryAddress)) {
+        // Order details already configured, go to payment
+        showPaymentModal();
+    } else if (currentOrderType) {
+        // Order type selected but details not set
+        if (currentOrderType === 'local') {
+            showTableSelectionModal();
+        } else if (currentOrderType === 'delivery') {
+            showDeliveryAddressModal();
+        }
+    } else {
+        // No order type selected, determine based on delivery type
+        if (deliveryType === 'with-delivery') {
+            showOrderTypeModal();
+        } else if (deliveryType === 'delivery-only') {
+            currentOrderType = 'delivery';
+            showDeliveryAddressModal();
+        } else if (deliveryType === 'no-delivery') {
+            currentOrderType = 'local';
+            showTableSelectionModal();
+        }
     }
+}
+
+function showPaymentModal() {
+    const paymentModal = document.getElementById('paymentModal');
+    paymentModal.classList.add('show');
+    
+    // Handle payment button clicks
+    const paymentButtons = paymentModal.querySelectorAll('.payment-btn');
+    paymentButtons.forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const paymentMethod = btn.getAttribute('data-method');
+            closePaymentModal();
+            showConfirmationModal(paymentMethod);
+        };
+    });
 }
 
 function displayCartItems() {
@@ -708,13 +837,11 @@ function showItemDetailsModal(item) {
     const descriptionEl = document.getElementById('itemDetailsDescription');
     const priceEl = document.getElementById('itemDetailsPrice');
     const imageEl = document.getElementById('itemDetailsImage');
-    const noteEl = document.getElementById('itemDetailsNote');
     
     // Populate modal
     nameEl.textContent = item.name;
     descriptionEl.textContent = item.description || 'Sem descrição disponível';
     priceEl.textContent = item.priceBRL;
-    noteEl.value = '';
     
     // Set image
     if (item.imageDataUrl) {
@@ -734,46 +861,22 @@ function closeItemDetailsModal() {
     currentItemForModal = null;
 }
 
-// Confirm and add item to cart
+// Confirm and add item to cart from mobile modal
 function confirmAddToCart() {
     if (!currentItemForModal) return;
     
-    const noteEl = document.getElementById('itemDetailsNote');
-    const note = noteEl?.value || '';
+    // Store the item in a local variable to prevent it from being lost
+    const itemToAdd = currentItemForModal;
     
-    // Ask for quantity on mobile too
-    const quantityStr = prompt(`Quantas unidades de "${currentItemForModal.name}" deseja adicionar?`, '1');
-    if (!quantityStr || quantityStr.trim() === '') {
-        return; // User cancelled
-    }
-
-    const quantity = parseInt(quantityStr);
-    if (isNaN(quantity) || quantity < 1) {
-        alert('❌ Quantidade inválida! Por favor, insira um número maior que zero.');
-        return;
-    }
-
-    if (quantity > 99) {
-        alert('❌ Quantidade máxima é 99 unidades.');
-        return;
-    }
-    
-    const cartItem = {
-        ...currentItemForModal,
-        cartId: Date.now() + Math.random(),
-        note: note,
-        quantity: quantity
-    };
-    
-    // Check if item already exists in cart with same note
-    const existingItem = cart.find(c => c.id === currentItemForModal.id && c.note === cartItem.note);
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push(cartItem);
-    }
-    
-    updateCartDisplay();
+    // Close mobile item details modal
     closeItemDetailsModal();
-    alert(`✅ ${quantity}x ${currentItemForModal.name} adicionado(s) ao carrinho!`);
+    
+    // Small delay to ensure smooth modal transition
+    setTimeout(() => {
+        // Set the current item for add to cart modal
+        currentItemForAddToCart = itemToAdd;
+        
+        // Show the add to cart modal with quantity and note
+        showAddToCartModal(itemToAdd);
+    }, 150);
 }

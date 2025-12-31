@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const orderTypeModal = document.getElementById('orderTypeModal');
     const tableSelectionModal = document.getElementById('tableSelectionModal');
     const deliveryAddressModal = document.getElementById('deliveryAddressModal');
+    const addToCartModal = document.getElementById('addToCartModal');
 
     if (e.target === paymentModal && typeof closePaymentModal === 'function') {
       closePaymentModal();
@@ -68,6 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (e.target === deliveryAddressModal && typeof closeDeliveryAddressModal === 'function') {
       closeDeliveryAddressModal();
+    }
+    if (e.target === addToCartModal && typeof closeAddToCartModal === 'function') {
+      closeAddToCartModal();
     }
   });
 
