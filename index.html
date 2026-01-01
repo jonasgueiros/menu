@@ -128,7 +128,7 @@
                 <div class="cart-modal-total">
                     Total: <span id="cartModalTotal">R$ 0,00</span>
                 </div>
-                <button class="btn-cancel" onclick="closeCartModal()">Voltar</button>
+                <button class="btn-cancel" onclick="goBackOrderStep()">Voltar</button>
                 <button class="btn-primary" id="proceedToPaymentBtn" onclick="proceedToPayment()">Continuar para Pagamento</button>
             </div>
         </div>
@@ -156,8 +156,9 @@
     <!-- Order Type Selection Modal (Local vs Delivery) -->
     <div class="modal" id="orderTypeModal">
         <div class="modal-content payment-modal">
-            <div class="modal-header">
-                <h2>Tipo de Pedido</h2>
+            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button class="circle-back-btn" onclick="goBackOrderStep()" aria-label="Voltar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5em;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s;margin-right:8px;"><span style="font-size:1.3em;">&#8592;</span></button>
+                <h2 style="flex:1;margin:0;text-align:left;">Tipo de Pedido</h2>
                 <span class="modal-close" onclick="closeOrderTypeModal()">&times;</span>
             </div>
             <p>Como deseja fazer o pedido?</p>
@@ -171,14 +172,16 @@
                     <span>Delivery</span>
                 </button>
             </div>
+            <!-- Removed duplicate Voltar button -->
         </div>
     </div>
 
     <!-- Table Selection Modal -->
     <div class="modal" id="tableSelectionModal">
         <div class="modal-content payment-modal">
-            <div class="modal-header">
-                <h2>Selecionar Mesa</h2>
+            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button class="circle-back-btn" onclick="goBackOrderStep()" aria-label="Voltar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5em;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s;margin-right:8px;"><span style="font-size:1.3em;">&#8592;</span></button>
+                <h2 style="flex:1;margin:0;text-align:left;">Selecionar Mesa</h2>
                 <span class="modal-close" onclick="closeTableSelectionModal()">&times;</span>
             </div>
             <p>Qual mesa você está ocupando?</p>
@@ -187,7 +190,6 @@
                     style="width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1em; text-align: center;">
             </div>
             <div style="display: flex; gap: 10px;">
-                <button class="confirmation-btn cancel" onclick="closeTableSelectionModal()">Cancelar</button>
                 <button class="confirmation-btn confirm" onclick="confirmTableSelection()">Confirmar Mesa</button>
             </div>
         </div>
@@ -196,8 +198,9 @@
     <!-- Delivery Address Modal -->
     <div class="modal" id="deliveryAddressModal">
         <div class="modal-content payment-modal">
-            <div class="modal-header">
-                <h2>Endereço de Entrega</h2>
+            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button class="circle-back-btn" onclick="goBackOrderStep()" aria-label="Voltar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5em;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s;margin-right:8px;"><span style="font-size:1.3em;">&#8592;</span></button>
+                <h2 style="flex:1;margin:0;text-align:left;">Endereço de Entrega</h2>
                 <span class="modal-close" onclick="closeDeliveryAddressModal()">&times;</span>
             </div>
             <p>Para onde devemos entregar?</p>
@@ -214,8 +217,23 @@
                     style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em; resize: vertical;"></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button class="confirmation-btn cancel" onclick="closeDeliveryAddressModal()">Cancelar</button>
                 <button class="confirmation-btn confirm" onclick="confirmDeliveryAddress()">Confirmar Endereço</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Order Modal -->
+    <div class="modal" id="reviewOrderModal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button class="circle-back-btn" onclick="goBackOrderStep()" aria-label="Voltar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5em;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s;margin-right:8px;"><span style="font-size:1.3em;">&#8592;</span></button>
+                <h2 style="flex:1;margin:0;text-align:left;">Revisar Pedido</h2>
+                <span class="modal-close" onclick="closeReviewOrderModal()">&times;</span>
+            </div>
+            <p>Deseja continuar para o pagamento ou voltar para o menu e adicionar mais itens?</p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-cancel" onclick="closeReviewOrderModal()">Continuar Comprando</button>
+                <button class="btn-primary" onclick="proceedToPaymentStep()">Ir para Pagamento</button>
             </div>
         </div>
     </div>
@@ -223,8 +241,9 @@
     <!-- Payment Method Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content payment-modal">
-            <div class="modal-header">
-                <h2>Forma de Pagamento</h2>
+            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button class="circle-back-btn" onclick="goBackOrderStep()" aria-label="Voltar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5em;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s;margin-right:8px;"><span style="font-size:1.3em;">&#8592;</span></button>
+                <h2 style="flex:1;margin:0;text-align:left;">Forma de Pagamento</h2>
                 <span class="modal-close" onclick="closePaymentModal()">&times;</span>
             </div>
             <p>Como o cliente deseja pagar?</p>
@@ -246,6 +265,7 @@
                     <span>PIX</span>
                 </button>
             </div>
+            <!-- Removed duplicate Voltar button -->
         </div>
     </div>
 
@@ -259,6 +279,9 @@
             <p>Tem certeza que deseja enviar este pedido para a cozinha?</p>
             <div id="confirmationPreview" class="confirmation-preview"></div>
             <div class="confirmation-actions">
+                <button class="confirmation-btn cancel" onclick="goBackOrderStep()">
+                    <span>← Voltar</span>
+                </button>
                 <button class="confirmation-btn confirm" id="confirmOrderBtn">
                     <span>✓ Confirmar e Enviar</span>
                 </button>
@@ -317,7 +340,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Cart Bar at Bottom -->
     <div class="cart-bar hidden">
         <div class="cart-content">

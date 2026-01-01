@@ -6,6 +6,10 @@ let currentTableNumber = null;
 let currentDeliveryAddress = null;
 let currentItemForAddToCart = null; // Store item being added
 
+// Track the current order step
+// 0: Itens do Carrinho, 1: Tipo de Pedido, 2: Selecionar Mesa/Endereço, 3: Forma de Pagamento, 4: Confirmar Pedido
+let orderStep = 0;
+
 function addToCart(item) {
     // Check if restaurant is closed
     const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
@@ -216,6 +220,7 @@ function openOrderTypeSelection() {
 }
 
 function showOrderTypeModal() {
+    orderStep = 1;
     const orderTypeModal = document.getElementById('orderTypeModal');
     orderTypeModal.classList.add('show');
 }
@@ -283,6 +288,7 @@ function updateOrderTypeButtons() {
 
 // Table Selection Functions
 function showTableSelectionModal() {
+    orderStep = 2;
     const tableModal = document.getElementById('tableSelectionModal');
     const tableInput = document.getElementById('tableNumberInput');
     if (tableInput) tableInput.value = '';
@@ -320,10 +326,14 @@ function confirmTableSelection() {
     updateOrderTypeFabIcon();
     
     alert(`✅ Mesa ${tableNumber} selecionada!\n🍽️ Pedido no Local`);
+    
+    // Show review order modal instead of payment
+    showReviewOrderModal();
 }
 
 // Delivery Address Functions
 function showDeliveryAddressModal() {
+    orderStep = 2;
     const addressModal = document.getElementById('deliveryAddressModal');
     // Clear previous values
     if (document.getElementById('deliveryStreet')) document.getElementById('deliveryStreet').value = '';
@@ -366,6 +376,9 @@ function confirmDeliveryAddress() {
     updateOrderTypeFabIcon();
     
     alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${street}, ${number}\n${neighborhood}`);
+    
+    // Show review order modal instead of payment
+    showReviewOrderModal();
 }
 
 function closePaymentModal() {
@@ -374,6 +387,7 @@ function closePaymentModal() {
 }
 
 function showConfirmationModal(paymentMethod) {
+    orderStep = 4;
     const confirmationModal = document.getElementById('confirmationModal');
     const confirmationPreview = document.getElementById('confirmationPreview');
     
@@ -571,7 +585,7 @@ function showReceiptModal(order) {
             ${orderTypeHTML}
             
             <div style="margin-bottom: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
-                <p style="margin: 0 0 10px 0; font-weight: bold;">ITENS DO PEDIDO:</p>
+                <p style="margin: 0; font-weight: bold; font-size: 14px;">ITENS DO PEDIDO:</p>
                 ${order.items.map((item, idx) => {
                     const price = parseBRL(item.price);
                     const itemTotal = (price * item.quantity).toFixed(2);
@@ -706,14 +720,58 @@ function saveReceiptAsImage(order) {
 
 // Cart Modal Functions
 function showCartModal() {
+    orderStep = 0;
     const cartModal = document.getElementById('cartModal');
     displayCartItems();
     cartModal.classList.add('show');
 }
 
+
 function closeCartModal() {
     const cartModal = document.getElementById('cartModal');
     cartModal.classList.remove('show');
+    orderStep = 0;
+}
+
+// Go back to the previous step in the order flow
+function goBackOrderStep() {
+    // Hide all modals first
+    document.getElementById('cartModal')?.classList.remove('show');
+    document.getElementById('orderTypeModal')?.classList.remove('show');
+    document.getElementById('tableSelectionModal')?.classList.remove('show');
+    document.getElementById('deliveryAddressModal')?.classList.remove('show');
+    document.getElementById('paymentModal')?.classList.remove('show');
+    document.getElementById('confirmationModal')?.classList.remove('show');
+    document.getElementById('reviewOrderModal')?.classList.remove('show');
+
+    if (orderStep === 0) {
+        closeCartModal();
+        return;
+    }
+    orderStep--;
+    switch (orderStep) {
+        case 0:
+            showCartModal();
+            break;
+        case 1:
+            showOrderTypeModal();
+            break;
+        case 2:
+            if (currentOrderType === 'local') {
+                showTableSelectionModal();
+            } else if (currentOrderType === 'delivery') {
+                showDeliveryAddressModal();
+            }
+            break;
+        case 3:
+            showPaymentModal();
+            break;
+        case 4:
+            showConfirmationModal();
+            break;
+        default:
+            closeCartModal();
+    }
 }
 
 function proceedToPayment() {
@@ -756,7 +814,19 @@ function proceedToPayment() {
     }
 }
 
+function goBackToCart() {
+    // Close all modals
+    closeOrderTypeModal();
+    closeTableSelectionModal();
+    closeDeliveryAddressModal();
+    closePaymentModal();
+    
+    // Open cart modal
+    showCartModal();
+}
+
 function showPaymentModal() {
+    orderStep = 3;
     const paymentModal = document.getElementById('paymentModal');
     paymentModal.classList.add('show');
     
@@ -879,4 +949,70 @@ function confirmAddToCart() {
         // Show the add to cart modal with quantity and note
         showAddToCartModal(itemToAdd);
     }, 150);
+}
+
+// Review Order Modal Functions
+function showReviewOrderModal() {
+    orderStep = 3;
+    document.getElementById('reviewOrderModal').classList.add('show');
+}
+
+function closeReviewOrderModal() {
+    document.getElementById('reviewOrderModal').classList.remove('show');
+}
+
+function proceedToPaymentStep() {
+    closeReviewOrderModal();
+    showPaymentModal();
+}
+
+// Patch confirmTableSelection and confirmDeliveryAddress to show review modal
+const _originalConfirmTableSelection = confirmTableSelection;
+confirmTableSelection = function() {
+    const tableInput = document.getElementById('tableNumberInput');
+    const tableNumber = parseInt(tableInput?.value);
+    if (!tableNumber || tableNumber < 1) {
+        alert('❌ Por favor, insira um número de mesa válido.');
+        return;
+    }
+    // Get table count from aboutInfo
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const maxTables = parseInt(about.tableCount) || 999;
+    if (tableNumber > maxTables) {
+        alert(`❌ Mesa inválida! O restaurante tem apenas ${maxTables} mesas.`);
+        return;
+    }
+    currentTableNumber = tableNumber;
+    closeTableSelectionModal();
+    updateOrderTypeButtonText();
+    updateOrderTypeFabIcon();
+    alert(`✅ Mesa ${tableNumber} selecionada!\n🍽️ Pedido no Local`);
+    // Show review order modal instead of payment
+    showReviewOrderModal();
+}
+
+const _originalConfirmDeliveryAddress = confirmDeliveryAddress;
+confirmDeliveryAddress = function() {
+    const street = document.getElementById('deliveryStreet')?.value.trim();
+    const number = document.getElementById('deliveryNumber')?.value.trim();
+    const complement = document.getElementById('deliveryComplement')?.value.trim();
+    const neighborhood = document.getElementById('deliveryNeighborhood')?.value.trim();
+    const reference = document.getElementById('deliveryReference')?.value.trim();
+    if (!street || !number || !neighborhood) {
+        alert('❌ Por favor, preencha todos os campos obrigatórios (Rua, Número, Bairro).');
+        return;
+    }
+    currentDeliveryAddress = {
+        street,
+        number,
+        complement,
+        neighborhood,
+        reference
+    };
+    closeDeliveryAddressModal();
+    updateOrderTypeButtonText();
+    updateOrderTypeFabIcon();
+    alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${street}, ${number}\n${neighborhood}`);
+    // Show review order modal instead of payment
+    showReviewOrderModal();
 }
