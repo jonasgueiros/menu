@@ -38,6 +38,26 @@ function initFeedback() {
     }
     
     if (textarea.value.trim()) {
+      // Save feedback to a mock order
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const ordersHistory = JSON.parse(localStorage.getItem('ordersHistory') || '[]');
+      
+      // Create a feedback-only order entry
+      const feedbackOrder = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString('pt-BR'),
+        feedback: textarea.value.trim(),
+        feedbackType: feedbackType.value,
+        feedbackEmail: email.value.trim() || null,
+        total: 0,
+        items: [],
+        paid: true // Mark as paid so it appears in history
+      };
+      
+      // Add to history
+      ordersHistory.push(feedbackOrder);
+      localStorage.setItem('ordersHistory', JSON.stringify(ordersHistory));
+      
       const typeLabel = feedbackType.value === 'restaurante' ? '🍽️ Restaurante' : '💻 Sistema';
       alert(`Obrigado pelo seu feedback sobre ${typeLabel}!`);
       feedbackForm.reset();

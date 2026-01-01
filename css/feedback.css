@@ -173,30 +173,65 @@
 
 /* Feedback Card Styles */
 .feedback-card {
-    background: white;
+    background: var(--bg-panel);
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 10px;
     margin-bottom: 15px;
-    border-left: 4px solid var(--warning);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary);
     transition: all 0.3s ease;
 }
 
 .feedback-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
+    background: #f0f4ff;
+    transform: translateX(5px);
 }
 
 .feedback-header {
-    font-weight: 600;
-    font-size: 1.05em;
+    font-weight: 700;
     color: var(--text);
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .feedback-content {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
     font-style: italic;
-    color: #555;
     line-height: 1.6;
+    color: var(--text);
+}
+
+.feedback-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Feedback Filter Buttons */
+.feedback-filter-btn {
+    padding: 10px 20px;
+    border: 2px solid #666;
+    background: white;
+    color: #666;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.feedback-filter-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+.feedback-filter-btn.active {
+    background: #666;
+    color: white;
 }
 
 @media (max-width: 768px) {

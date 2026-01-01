@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="../css/admin-products.css">
     <link rel="stylesheet" href="../css/admin-about.css">
+    <link rel="stylesheet" href="../css/feedback.css">
     <style>
         body {
             overflow: hidden;
@@ -226,6 +227,20 @@
                                 <div class="stat-content">
                                     <div class="stat-label">Pedidos Pendentes</div>
                                     <div class="stat-value" id="pendingOrdersCount">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card" id="deliveryStatsCard" style="display: none;">
+                                <div class="stat-icon">🚗</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Deliveries Hoje</div>
+                                    <div class="stat-value" id="deliveryOrdersCount">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card" id="localStatsCard" style="display: none;">
+                                <div class="stat-icon">🍽️</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Pedidos Locais</div>
+                                    <div class="stat-value" id="localOrdersCount">0</div>
                                 </div>
                             </div>
                         </div>

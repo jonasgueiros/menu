@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     displayPaymentHistory();
     displayFeedbackComments();
     updateRestaurantStatusDisplay();
+    updateDeliveryStatsVisibility();
 });
 
 function initializeAdminPage() {
@@ -202,10 +203,25 @@ function updateDashboardStats() {
     const paidOrdersCount = history.length;
     const pendingOrdersCount = allOrders.filter(o => !o.paid).length;
     
+    // Calculate delivery stats from paid orders
+    const deliveryOrders = history.filter(order => order.orderType === 'delivery').length;
+    const localOrders = history.filter(order => order.orderType === 'local').length;
+    
     // Update dashboard
     document.getElementById('totalRevenue').textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
     document.getElementById('paidOrdersCount').textContent = paidOrdersCount;
     document.getElementById('pendingOrdersCount').textContent = pendingOrdersCount;
+    
+    // Update delivery stats if element exists
+    const deliveryStatsEl = document.getElementById('deliveryOrdersCount');
+    if (deliveryStatsEl) {
+        deliveryStatsEl.textContent = deliveryOrders;
+    }
+    
+    const localStatsEl = document.getElementById('localOrdersCount');
+    if (localStatsEl) {
+        localStatsEl.textContent = localOrders;
+    }
     
     // Calculate most requested items
     const itemsCount = {};
@@ -309,7 +325,7 @@ function displayPaymentHistory() {
     const headerDiv = document.createElement('div');
     headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border);';
     headerDiv.innerHTML = `
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="history-view-btn active" data-view="orders" onclick="switchHistoryView('orders')" 
                 style="padding: 10px 20px; border: 2px solid var(--primary); background: var(--primary); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
                 📋 Pedidos
@@ -317,6 +333,18 @@ function displayPaymentHistory() {
             <button class="history-view-btn" data-view="items" onclick="switchHistoryView('items')" 
                 style="padding: 10px 20px; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
                 🍽️ Itens Vendidos
+            </button>
+            <button class="history-filter-btn" data-filter="all" onclick="filterHistoryByType('all')" 
+                style="padding: 10px 20px; border: 2px solid #666; background: #666; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                📊 Todos
+            </button>
+            <button class="history-filter-btn" data-filter="local" onclick="filterHistoryByType('local')" 
+                style="padding: 10px 20px; border: 2px solid #666; background: white; color: #666; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                🍽️ Local
+            </button>
+            <button class="history-filter-btn" data-filter="delivery" onclick="filterHistoryByType('delivery')" 
+                style="padding: 10px 20px; border: 2px solid #666; background: white; color: #666; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                🚗 Delivery
             </button>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
@@ -504,6 +532,82 @@ function switchHistoryView(view) {
     } else {
         ordersView.style.display = 'none';
         itemsView.style.display = 'block';
+    }
+}
+
+// Filter history by order type (all, local, delivery)
+let currentHistoryFilter = 'all';
+
+function filterHistoryByType(filterType) {
+    currentHistoryFilter = filterType;
+    
+    // Update button styles
+    document.querySelectorAll('.history-filter-btn').forEach(btn => {
+        if (btn.dataset.filter === filterType) {
+            btn.style.background = '#666';
+            btn.style.color = 'white';
+        } else {
+            btn.style.background = 'white';
+            btn.style.color = '#666';
+        }
+    });
+    
+    // Get all order cards
+    const ordersContainer = document.getElementById('historyOrdersView');
+    if (!ordersContainer) return;
+    
+    const orderCards = ordersContainer.querySelectorAll('.order-card');
+    
+    orderCards.forEach(card => {
+        const orderTypeDiv = card.querySelector('[style*="background: #e3f2fd"], [style*="background: #fff3e0"]');
+        
+        if (filterType === 'all') {
+            card.style.display = 'block';
+        } else if (filterType === 'local') {
+            // Show only local orders (blue background)
+            if (orderTypeDiv && orderTypeDiv.style.background.includes('#e3f2fd')) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        } else if (filterType === 'delivery') {
+            // Show only delivery orders (orange background)
+            if (orderTypeDiv && orderTypeDiv.style.background.includes('#fff3e0')) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        }
+    });
+    
+    // Update total display based on filter
+    updateFilteredTotal();
+}
+
+function updateFilteredTotal() {
+    const savedHistory = localStorage.getItem('ordersHistory');
+    const history = savedHistory ? JSON.parse(savedHistory) : [];
+    const paidOrders = history.filter(order => order.paid && !order.canceled);
+    
+    let filteredOrders = paidOrders;
+    if (currentHistoryFilter === 'local') {
+        filteredOrders = paidOrders.filter(order => order.orderType === 'local');
+    } else if (currentHistoryFilter === 'delivery') {
+        filteredOrders = paidOrders.filter(order => order.orderType === 'delivery');
+    }
+    
+    const filteredTotal = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+    
+    // Update the total display in the header
+    const headerDiv = document.querySelector('#historyList > div:first-child');
+    if (headerDiv) {
+        const totalDiv = headerDiv.querySelector('[style*="font-size: 1.2em"]');
+        if (totalDiv) {
+            const filterLabel = currentHistoryFilter === 'all' ? 'Total' : 
+                               currentHistoryFilter === 'local' ? 'Total (Local)' : 
+                               'Total (Delivery)';
+            totalDiv.innerHTML = `💰 ${filterLabel}: R$ ${filteredTotal.toFixed(2).replace('.', ',')} <span style="font-size: 0.8em; color: #666;">(${filteredOrders.length} pedidos)</span>`;
+        }
     }
 }
 
@@ -698,6 +802,29 @@ function toggleProductAvailability(id) {
 }
 
 // Restaurant Status Management
+function updateDeliveryStatsVisibility() {
+    const about = JSON.parse(localStorage.getItem('aboutInfo') || '{}');
+    const deliveryType = about.deliveryType || 'with-delivery';
+    
+    const deliveryStatsCard = document.getElementById('deliveryStatsCard');
+    const localStatsCard = document.getElementById('localStatsCard');
+    
+    // Show stats based on delivery type
+    if (deliveryType === 'with-delivery') {
+        // Show both
+        if (deliveryStatsCard) deliveryStatsCard.style.display = 'flex';
+        if (localStatsCard) localStatsCard.style.display = 'flex';
+    } else if (deliveryType === 'delivery-only') {
+        // Show only delivery
+        if (deliveryStatsCard) deliveryStatsCard.style.display = 'flex';
+        if (localStatsCard) localStatsCard.style.display = 'none';
+    } else if (deliveryType === 'no-delivery') {
+        // Show only local
+        if (deliveryStatsCard) deliveryStatsCard.style.display = 'none';
+        if (localStatsCard) localStatsCard.style.display = 'flex';
+    }
+}
+
 function updateRestaurantStatusDisplay() {
     const isOpen = localStorage.getItem('restaurantOpen') !== 'false';
     const statusText = document.getElementById('restaurantStatusText');
