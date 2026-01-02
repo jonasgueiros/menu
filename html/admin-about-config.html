@@ -1,0 +1,30 @@
+<!-- Admin About Config Page -->
+<section class="admin-about-config">
+  <h2>ℹ️ Sobre o Restaurante</h2>
+  <form id="aboutForm">
+    <!-- Theme Color Section -->
+    <fieldset>
+      <legend>🎨 Cores do Tema</legend>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-bottom: 10px;">
+        <div class="form-group">
+          <label for="themePrimaryColor">Cor Primária<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Principal do sistema)</span></label>
+          <input type="color" id="themePrimaryColor" value="#667eea" style="width: 60px; height: 40px;">
+        </div>
+        <div class="form-group">
+          <label for="themeAccentColor">Cor de Destaque<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Accent)</span></label>
+          <input type="color" id="themeAccentColor" value="#764ba2" style="width: 60px; height: 40px;">
+        </div>
+        <div class="form-group">
+          <label for="themePrimaryHoverColor">Cor Primária Hover<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Cor ao passar o mouse)</span></label>
+          <input type="color" id="themePrimaryHoverColor" value="#5568d3" style="width: 60px; height: 40px;">
+        </div>
+        <div class="form-group">
+          <label for="themeAccentDarkColor">Cor de Destaque Escura<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Accent Dark)</span></label>
+          <input type="color" id="themeAccentDarkColor" value="#6a4097" style="width: 60px; height: 40px;">
+        </div>
+      </div>
+      <button type="button" class="btn-primary" id="saveThemeBtn" style="margin-top: 10px;">Salvar Tema</button>
+    </fieldset>
+    <!-- ...other about fields can be added here... -->
+  </form>
+</section>

@@ -1,3 +1,53 @@
+    // Theme color logic
+    const themePrimaryInput = document.getElementById('themePrimaryColor');
+    const themePrimaryHoverInput = document.getElementById('themePrimaryHoverColor');
+    const themeAccentInput = document.getElementById('themeAccentColor');
+    const themeAccentDarkInput = document.getElementById('themeAccentDarkColor');
+    const saveThemeBtn = document.getElementById('saveThemeBtn');
+
+    // Load saved theme
+    if (themePrimaryInput && themePrimaryHoverInput && themeAccentInput && themeAccentDarkInput) {
+        const savedTheme = JSON.parse(localStorage.getItem('themeColors') || '{}');
+        if (savedTheme.primary) themePrimaryInput.value = savedTheme.primary;
+        if (savedTheme.primaryHover) themePrimaryHoverInput.value = savedTheme.primaryHover;
+        if (savedTheme.accent) themeAccentInput.value = savedTheme.accent;
+        if (savedTheme.accentDark) themeAccentDarkInput.value = savedTheme.accentDark;
+        applyThemeColors(savedTheme);
+    }
+
+    if (saveThemeBtn) {
+        saveThemeBtn.addEventListener('click', () => {
+            const themeColors = {
+                primary: themePrimaryInput.value,
+                primaryHover: themePrimaryHoverInput.value,
+                accent: themeAccentInput.value,
+                accentDark: themeAccentDarkInput.value
+            };
+            localStorage.setItem('themeColors', JSON.stringify(themeColors));
+            applyThemeColors(themeColors);
+            updateThemeCss(themeColors);
+            alert('🎨 Tema salvo e aplicado!');
+        });
+    }
+
+    // Update theme.css file (requires backend or local file write capability)
+    function updateThemeCss(theme) {
+        if (!theme) return;
+        const css = `:root {\n  /* Brand */\n  --primary: ${theme.primary};\n  --primary-hover: ${theme.primaryHover};\n  --accent: ${theme.accent};\n  --accent-dark: ${theme.accentDark};\n\n  /* Text */\n  --text: #333;\n  --muted: #666;\n  --subtle: #999;\n\n  /* Surfaces & Borders */\n  --bg: #f5f5f5;\n  --bg-panel: #f9f9f9;\n  --border: #ddd;\n  --border-light: #eee;\n\n  /* Status */\n  --success: #4CAF50;\n  --warning: #ff9800;\n  --info: #2196F3;\n  --danger: #ff4444;\n  --danger-dark: #dd3333;\n  --danger-strong: #f44336;\n\n  /* Gradients */\n  --gradient-primary: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%);\n  --gradient-soft: linear-gradient(180deg, var(--bg) 0%, #ffffff 100%);\n}`;
+        fetch('theme.css', { method: 'PUT', body: css }); // This will only work with a backend or local server that allows PUT
+    }
+
+    function applyThemeColors(theme) {
+        if (!theme) return;
+        const root = document.documentElement;
+        if (theme.primary) root.style.setProperty('--primary', theme.primary);
+        if (theme.primaryHover) root.style.setProperty('--primary-hover', theme.primaryHover);
+        if (theme.accent) root.style.setProperty('--accent', theme.accent);
+        if (theme.accentDark) root.style.setProperty('--accent-dark', theme.accentDark);
+        if (theme.primary && theme.accent) {
+            root.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%)`);
+        }
+    }
 // Restaurant Info Management Functions
 
 // Initialize about/restaurant info features

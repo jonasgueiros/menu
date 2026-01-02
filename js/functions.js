@@ -320,13 +320,11 @@ function confirmTableSelection() {
     
     currentTableNumber = tableNumber;
     closeTableSelectionModal();
-    
     // Update button text and FAB icon
     updateOrderTypeButtonText();
     updateOrderTypeFabIcon();
-    
     alert(`✅ Mesa ${tableNumber} selecionada!\n🍽️ Pedido no Local`);
-    
+    // Do NOT reset order type if table is chosen
     // Show review order modal instead of payment
     showReviewOrderModal();
 }
@@ -335,12 +333,9 @@ function confirmTableSelection() {
 function showDeliveryAddressModal() {
     orderStep = 2;
     const addressModal = document.getElementById('deliveryAddressModal');
-    // Clear previous values
-    if (document.getElementById('deliveryStreet')) document.getElementById('deliveryStreet').value = '';
-    if (document.getElementById('deliveryNumber')) document.getElementById('deliveryNumber').value = '';
-    if (document.getElementById('deliveryComplement')) document.getElementById('deliveryComplement').value = '';
-    if (document.getElementById('deliveryNeighborhood')) document.getElementById('deliveryNeighborhood').value = '';
-    if (document.getElementById('deliveryReference')) document.getElementById('deliveryReference').value = '';
+    // Only use Endereço and Referencia fields
+    if (document.getElementById('deliveryEndereco')) document.getElementById('deliveryEndereco').value = '';
+    if (document.getElementById('deliveryReferencia')) document.getElementById('deliveryReferencia').value = '';
     addressModal.classList.add('show');
 }
 
@@ -350,33 +345,21 @@ function closeDeliveryAddressModal() {
 }
 
 function confirmDeliveryAddress() {
-    const street = document.getElementById('deliveryStreet')?.value.trim();
-    const number = document.getElementById('deliveryNumber')?.value.trim();
-    const complement = document.getElementById('deliveryComplement')?.value.trim();
-    const neighborhood = document.getElementById('deliveryNeighborhood')?.value.trim();
-    const reference = document.getElementById('deliveryReference')?.value.trim();
-    
-    if (!street || !number || !neighborhood) {
-        alert('❌ Por favor, preencha todos os campos obrigatórios (Rua, Número, Bairro).');
+    const endereco = document.getElementById('deliveryEndereco')?.value.trim();
+    const referencia = document.getElementById('deliveryReferencia')?.value.trim();
+    if (!endereco) {
+        alert('❌ Por favor, preencha o campo obrigatório: Endereço.');
         return;
     }
-    
     currentDeliveryAddress = {
-        street,
-        number,
-        complement,
-        neighborhood,
-        reference
+        endereco,
+        referencia
     };
-    
     closeDeliveryAddressModal();
-    
     // Update button text and FAB icon
     updateOrderTypeButtonText();
     updateOrderTypeFabIcon();
-    
-    alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${street}, ${number}\n${neighborhood}`);
-    
+    alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${endereco}${referencia ? '\nReferência: ' + referencia : ''}`);
     // Show review order modal instead of payment
     showReviewOrderModal();
 }
@@ -534,13 +517,17 @@ function completeCheckout(paymentMethod) {
     updateCartDisplay();
     
     // Reset order details and button text
+    resetOrderState();
+}
+
+function resetOrderState() {
+    // Only reset table number if not local order
+    if (currentOrderType !== 'local') {
+        currentTableNumber = null;
+    }
     currentOrderType = null;
-    currentTableNumber = null;
     currentDeliveryAddress = null;
-    
-    // Reset order type button text and FAB icon
-    updateOrderTypeButtonText();
-    updateOrderTypeFabIcon();
+    // ...reset other order state as needed...
 }
 
 function showReceiptModal(order) {
@@ -984,35 +971,31 @@ confirmTableSelection = function() {
     }
     currentTableNumber = tableNumber;
     closeTableSelectionModal();
+    // Update button text and FAB icon
     updateOrderTypeButtonText();
     updateOrderTypeFabIcon();
     alert(`✅ Mesa ${tableNumber} selecionada!\n🍽️ Pedido no Local`);
+    // Do NOT reset order type if table is chosen
     // Show review order modal instead of payment
     showReviewOrderModal();
 }
 
 const _originalConfirmDeliveryAddress = confirmDeliveryAddress;
 confirmDeliveryAddress = function() {
-    const street = document.getElementById('deliveryStreet')?.value.trim();
-    const number = document.getElementById('deliveryNumber')?.value.trim();
-    const complement = document.getElementById('deliveryComplement')?.value.trim();
-    const neighborhood = document.getElementById('deliveryNeighborhood')?.value.trim();
-    const reference = document.getElementById('deliveryReference')?.value.trim();
-    if (!street || !number || !neighborhood) {
-        alert('❌ Por favor, preencha todos os campos obrigatórios (Rua, Número, Bairro).');
+    const endereco = document.getElementById('deliveryEndereco')?.value.trim();
+    const referencia = document.getElementById('deliveryReferencia')?.value.trim();
+    if (!endereco) {
+        alert('❌ Por favor, preencha o campo obrigatório: Endereço.');
         return;
     }
     currentDeliveryAddress = {
-        street,
-        number,
-        complement,
-        neighborhood,
-        reference
+        endereco,
+        referencia
     };
     closeDeliveryAddressModal();
     updateOrderTypeButtonText();
     updateOrderTypeFabIcon();
-    alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${street}, ${number}\n${neighborhood}`);
+    alert(`✅ Endereço de entrega configurado!\n🚗 Delivery para:\n${endereco}${referencia ? '\nReferência: ' + referencia : ''}`);
     // Show review order modal instead of payment
     showReviewOrderModal();
 }

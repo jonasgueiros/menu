@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     displayMostRequestedItems(10);
     displayAllOrders();
     displayPaymentHistory();
+    // Do not overwrite feedbackList, just display
     displayFeedbackComments();
     updateRestaurantStatusDisplay();
     updateDeliveryStatsVisibility();
@@ -148,9 +149,12 @@ function markOrderAsPaid(orderId) {
         orders.splice(orderIndex, 1);
         localStorage.setItem('orders', JSON.stringify(orders));
         
-        updateAdminOrders();
-        updateDashboardStats();
-        alert('✅ Pedido marcado como pago!');
+            // Immediately re-fetch and re-render unpaid orders list
+            setTimeout(() => {
+                updateAdminOrders();
+                updateDashboardStats();
+            }, 50);
+            alert('✅ Pedido marcado como pago!');
     } else {
         alert('❌ Erro ao marcar pedido como pago. Tente novamente.');
     }
@@ -182,9 +186,12 @@ function cancelOrder(orderId) {
         orders.splice(orderIndex, 1);
         localStorage.setItem('orders', JSON.stringify(orders));
         
-        updateAdminOrders();
-        updateDashboardStats();
-        alert('❌ Pedido cancelado com sucesso!');
+            // Immediately re-fetch and re-render unpaid orders list
+            setTimeout(() => {
+                updateAdminOrders();
+                updateDashboardStats();
+            }, 50);
+            alert('❌ Pedido cancelado com sucesso!');
     } else {
         alert('❌ Erro ao cancelar pedido. Tente novamente.');
     }
@@ -321,43 +328,52 @@ function displayPaymentHistory() {
     
     historyList.innerHTML = '';
     
-    // Add header with toggle buttons and total
+
+    // Add header with tab buttons and total (no filters)
     const headerDiv = document.createElement('div');
-    headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border);';
+    headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid var(--border);';
     headerDiv.innerHTML = `
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="history-view-btn active" data-view="orders" onclick="switchHistoryView('orders')" 
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button class="history-view-btn active" data-view="orders" onclick="switchHistoryView('orders')"
                 style="padding: 10px 20px; border: 2px solid var(--primary); background: var(--primary); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
                 📋 Pedidos
             </button>
-            <button class="history-view-btn" data-view="items" onclick="switchHistoryView('items')" 
+            <button class="history-view-btn" data-view="items" onclick="switchHistoryView('items')"
                 style="padding: 10px 20px; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
                 🍽️ Itens Vendidos
-            </button>
-            <button class="history-filter-btn" data-filter="all" onclick="filterHistoryByType('all')" 
-                style="padding: 10px 20px; border: 2px solid #666; background: #666; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
-                📊 Todos
-            </button>
-            <button class="history-filter-btn" data-filter="local" onclick="filterHistoryByType('local')" 
-                style="padding: 10px 20px; border: 2px solid #666; background: white; color: #666; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
-                🍽️ Local
-            </button>
-            <button class="history-filter-btn" data-filter="delivery" onclick="filterHistoryByType('delivery')" 
-                style="padding: 10px 20px; border: 2px solid #666; background: white; color: #666; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
-                🚗 Delivery
             </button>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
             <div style="font-size: 1.2em; font-weight: 700; color: var(--primary);">
                 💰 Total: R$ ${totalRevenue.toFixed(2).replace('.', ',')}
             </div>
-            <button onclick="exportHistoryToExcel()" 
+            <button onclick="exportHistoryToExcel()"
                 style="padding: 10px 20px; border: 2px solid #4CAF50; background: #4CAF50; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
                 📊 Exportar para Excel
             </button>
         </div>
     `;
     historyList.appendChild(headerDiv);
+
+    // Add filter row below header
+    const filterRow = document.createElement('div');
+    filterRow.id = 'historyPedidosFilters';
+    filterRow.style.cssText = 'display: flex; gap: 8px; margin-bottom: 18px; justify-content: flex-start;';
+    filterRow.innerHTML = `
+        <button class="history-filter-btn" data-filter="all" onclick="filterHistoryByType('all')"
+            style="padding: 10px 20px; border: 2px solid #666; background: #666; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+            📊 Todos
+        </button>
+        <button class="history-filter-btn" data-filter="local" onclick="filterHistoryByType('local')"
+            style="padding: 10px 20px; border: 2px solid #666; background: white; color: #666; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+            🍽️ Local
+        </button>
+        <button class="history-filter-btn" data-filter="delivery" onclick="filterHistoryByType('delivery')"
+            style="padding: 10px 20px; border: 2px solid #666; background: white; color: #666; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+            🚗 Delivery
+        </button>
+    `;
+    historyList.appendChild(filterRow);
     
     // Create container for orders view
     const ordersContainer = document.createElement('div');
@@ -373,7 +389,8 @@ function displayPaymentHistory() {
     sortedHistory.forEach(order => {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-card';
-        
+        orderCard.setAttribute('data-order-type', order.orderType || '');
+
         // Build order type info
         let orderTypeHTML = '';
         if (order.orderType === 'local' && order.tableNumber) {
@@ -391,36 +408,36 @@ function displayPaymentHistory() {
                 </div>
             `;
         }
-        
+
         let itemsHTML = '<ul class="order-items">';
         order.items.forEach(item => {
             itemsHTML += `<li><strong>${item.name}</strong> (x${item.quantity}) - ${item.price}`;
             if (item.note) {
-                itemsHTML += `<br><em style="color: #ff9800;">🔖 Nota: ${item.note}</em>`;
+                itemsHTML += `<br><em style=\"color: #ff9800;\">🔖 Nota: ${item.note}</em>`;
             }
             itemsHTML += '</li>';
         });
         itemsHTML += '</ul>';
-        
+
         const paymentLabels = {
             'dinheiro': '💵 Dinheiro',
             'credito': '💳 Crédito',
             'debito': '🧾 Débito',
             'pix': '📱 PIX'
         };
-        
+
         const totalFormatted = `R$ ${order.total.toFixed(2).replace('.', ',')}`;
         const paidDate = order.paidDate || order.timestamp;
-        
+
         orderCard.innerHTML = `
-            <div class="order-header">✅ Pedido #${order.id}</div>
-            <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+            <div class=\"order-header\">✅ Pedido #${order.id}</div>
+            <div style=\"font-size: 0.9em; color: #666; margin-bottom: 10px;\">
                 <span>🕐 Realizado: ${order.timestamp}</span><br>
-                <span style="color: #4CAF50; font-weight: 600;">✓ Pago em: ${paidDate}</span>
+                <span style=\"color: #4CAF50; font-weight: 600;\">✓ Pago em: ${paidDate}</span>
             </div>
             ${orderTypeHTML}
             ${itemsHTML}
-            <div class="order-payment">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
+            <div class=\"order-payment\">💰 Total: <strong>${totalFormatted}</strong> | ${paymentLabels[order.paymentMethod]}</div>
         `;
         ordersContainer.appendChild(orderCard);
     });
@@ -529,9 +546,11 @@ function switchHistoryView(view) {
     if (view === 'orders') {
         ordersView.style.display = 'block';
         itemsView.style.display = 'none';
+        document.getElementById('historyPedidosFilters').style.display = 'flex';
     } else {
         ordersView.style.display = 'none';
         itemsView.style.display = 'block';
+        document.getElementById('historyPedidosFilters').style.display = 'none';
     }
 }
 
@@ -555,24 +574,21 @@ function filterHistoryByType(filterType) {
     // Get all order cards
     const ordersContainer = document.getElementById('historyOrdersView');
     if (!ordersContainer) return;
-    
+
     const orderCards = ordersContainer.querySelectorAll('.order-card');
-    
+
     orderCards.forEach(card => {
-        const orderTypeDiv = card.querySelector('[style*="background: #e3f2fd"], [style*="background: #fff3e0"]');
-        
+        const orderType = card.getAttribute('data-order-type');
         if (filterType === 'all') {
             card.style.display = 'block';
         } else if (filterType === 'local') {
-            // Show only local orders (blue background)
-            if (orderTypeDiv && orderTypeDiv.style.background.includes('#e3f2fd')) {
+            if (orderType === 'local') {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         } else if (filterType === 'delivery') {
-            // Show only delivery orders (orange background)
-            if (orderTypeDiv && orderTypeDiv.style.background.includes('#fff3e0')) {
+            if (orderType === 'delivery') {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
@@ -730,37 +746,45 @@ function displayAllOrders() {
 }
 
 // Display feedback and complaints
+let feedbackFilter = 'all';
+
+function setFeedbackFilter(type) {
+    feedbackFilter = type;
+    document.querySelectorAll('.feedback-filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (type === 'restaurante') {
+        document.getElementById('filterRestaurante').classList.add('active');
+    } else if (type === 'sistema') {
+        document.getElementById('filterSistema').classList.add('active');
+    } else {
+        document.getElementById('filterAll').classList.add('active');
+    }
+    displayFeedbackComments();
+}
+
 function displayFeedbackComments() {
-    const feedbackList = document.getElementById('feedbackList');
-    if (!feedbackList) return;
-    
-    // Get all orders (from both orders and ordersHistory)
-    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const ordersHistory = JSON.parse(localStorage.getItem('ordersHistory') || '[]');
-    const allOrders = [...orders, ...ordersHistory];
-    
-    // Filter orders that have feedback
-    const feedbackOrders = allOrders.filter(order => order.feedback);
-    
-    if (feedbackOrders.length === 0) {
-        feedbackList.innerHTML = '<p class="empty-state">Nenhum feedback registrado</p>';
+    const feedbackListElem = document.getElementById('feedbackList');
+    if (!feedbackListElem) return;
+
+    let feedbackList = JSON.parse(localStorage.getItem('feedbackList') || '[]');
+    if (feedbackFilter !== 'all') {
+        feedbackList = feedbackList.filter(fb => fb.type === feedbackFilter);
+    }
+    if (feedbackList.length === 0) {
+        feedbackListElem.innerHTML = '<p class="empty-state">Nenhum feedback registrado</p>';
         return;
     }
-    
-    // Sort by timestamp (newest first)
-    feedbackOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    feedbackList.innerHTML = '';
-    
-    feedbackOrders.forEach(order => {
+
+    feedbackList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    feedbackListElem.innerHTML = '';
+
+    feedbackList.forEach(feedback => {
         const feedbackCard = document.createElement('div');
         feedbackCard.className = 'feedback-card';
-        
-        // Determine sentiment from feedback (simple analysis)
+
         let sentiment = '😐';
         let sentimentText = 'Neutra';
-        const feedbackLower = order.feedback.toLowerCase();
-        
+        const feedbackLower = feedback.comment.toLowerCase();
+
         if (feedbackLower.includes('ótim') || feedbackLower.includes('excelent') || feedbackLower.includes('adorei') || feedbackLower.includes('perfeito')) {
             sentiment = '😍';
             sentimentText = 'Positiva';
@@ -771,22 +795,20 @@ function displayFeedbackComments() {
             sentiment = '😊';
             sentimentText = 'Positiva';
         }
-        
+
         feedbackCard.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                 <div>
-                    <div class="feedback-header">📝 Pedido #${order.id} - ${sentiment} ${sentimentText}</div>
-                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">🕐 ${order.timestamp}</div>
+                    <div class="feedback-header">${feedback.type === 'restaurante' ? '🍽️ Restaurante' : '💻 Sistema'} - ${sentiment} ${sentimentText}</div>
+                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">🕐 ${new Date(feedback.timestamp).toLocaleString('pt-BR')}</div>
                 </div>
             </div>
             <div class="feedback-content" style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin: 10px 0;">
-                "${order.feedback}"
+                "${feedback.comment}"
             </div>
-            <div style="font-size: 0.9em; color: #666;">
-                💰 Total: R$ ${order.total.toFixed(2).replace('.', ',')} | Status: ${order.paid ? '✅ Pago' : '⏳ Pendente'}
-            </div>
+            ${feedback.email ? `<div style=\"font-size: 0.9em; color: #666;\">✉️ ${feedback.email}</div>` : ''}
         `;
-        feedbackList.appendChild(feedbackCard);
+        feedbackListElem.appendChild(feedbackCard);
     });
 }
 
@@ -999,12 +1021,23 @@ function exportHistoryToExcel() {
         return;
     }
     
-    // Calculate items sold with totals
+    // Calculate items sold with totals and delivery/local sales
     const itemsData = {};
     let totalRevenue = 0;
-    
+    let deliveryCount = 0;
+    let deliveryRevenue = 0;
+    let localCount = 0;
+    let localRevenue = 0;
+
     paidOrders.forEach(order => {
         totalRevenue += order.total;
+        if (order.orderType === 'delivery') {
+            deliveryCount++;
+            deliveryRevenue += order.total;
+        } else if (order.orderType === 'local') {
+            localCount++;
+            localRevenue += order.total;
+        }
         order.items.forEach(item => {
             const itemName = item.name;
             if (!itemsData[itemName]) {
@@ -1013,9 +1046,7 @@ function exportHistoryToExcel() {
                     totalRevenue: 0
                 };
             }
-            
             itemsData[itemName].quantity += item.quantity;
-            
             // Parse price from string like "R$ 15,00"
             const priceValue = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
             itemsData[itemName].totalRevenue += priceValue * item.quantity;
@@ -1035,6 +1066,10 @@ function exportHistoryToExcel() {
     csvContent += 'Data de Exportação,' + new Date().toLocaleDateString('pt-BR') + '\n';
     csvContent += 'Total de Pedidos Pagos,' + paidOrders.length + '\n';
     csvContent += 'Receita Total,R$ ' + totalRevenue.toFixed(2).replace('.', ',') + '\n';
+    csvContent += 'Pedidos Delivery,' + deliveryCount + '\n';
+    csvContent += 'Receita Delivery,R$ ' + deliveryRevenue.toFixed(2).replace('.', ',') + '\n';
+    csvContent += 'Pedidos Local,' + localCount + '\n';
+    csvContent += 'Receita Local,R$ ' + localRevenue.toFixed(2).replace('.', ',') + '\n';
     csvContent += '\n';
     
     // Orders section

@@ -263,4 +263,3 @@ function saveOrders() {
 
 // Initialize shared state immediately
 loadSharedState();
-

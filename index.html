@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="css/cart.css">
     <link rel="stylesheet" href="css/modals.css">
     <link rel="stylesheet" href="css/feedback.css">
-    <link rel="stylesheet" href="css/admin.css">
     <link rel="icon" href="data:image/svg+xml,
         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
             <text y='0.9em' font-size='90'>🍽️</text>
@@ -205,15 +204,9 @@
             </div>
             <p>Para onde devemos entregar?</p>
             <div style="padding: 20px; display: grid; gap: 15px;">
-                <input type="text" id="deliveryStreet" placeholder="Rua" 
+                <input type="text" id="deliveryEndereco" placeholder="Endereço completo" 
                     style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
-                <input type="text" id="deliveryNumber" placeholder="Número" 
-                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
-                <input type="text" id="deliveryComplement" placeholder="Complemento (opcional)" 
-                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
-                <input type="text" id="deliveryNeighborhood" placeholder="Bairro" 
-                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em;">
-                <textarea id="deliveryReference" placeholder="Ponto de referência (opcional)" rows="2"
+                <textarea id="deliveryReferencia" placeholder="Ponto de referência (opcional)" rows="2"
                     style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95em; resize: vertical;"></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -273,15 +266,13 @@
     <div class="modal" id="confirmationModal">
         <div class="modal-content confirmation-modal">
             <div class="modal-header">
+                <button class="circle-back-btn" onclick="goBackOrderStep()" aria-label="Voltar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5em;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s;margin-right:8px;"><span style="font-size:1.3em;">&#8592;</span></button>
                 <h2>✅ Confirmar Pedido</h2>
                 <span class="modal-close" onclick="closeConfirmationModal()">&times;</span>
             </div>
             <p>Tem certeza que deseja enviar este pedido para a cozinha?</p>
             <div id="confirmationPreview" class="confirmation-preview"></div>
             <div class="confirmation-actions">
-                <button class="confirmation-btn cancel" onclick="goBackOrderStep()">
-                    <span>← Voltar</span>
-                </button>
                 <button class="confirmation-btn confirm" id="confirmOrderBtn">
                     <span>✓ Confirmar e Enviar</span>
                 </button>
@@ -368,12 +359,25 @@
         <span class="order-type-fab-icon" id="orderTypeFabIcon">📍</span>
     </button>
 
-    <script src="js/shared.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/functions.js"></script>
-    <script src="js/tabs.js"></script>
-    <script src="js/sobre.js"></script>
-    <script src="js/script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script>
+        // Apply theme colors from localStorage
+        (function() {
+            const theme = JSON.parse(localStorage.getItem('themeColors') || '{}');
+            const root = document.documentElement;
+            if (theme.primary) root.style.setProperty('--primary', theme.primary);
+            if (theme.primaryHover) root.style.setProperty('--primary-hover', theme.primaryHover);
+            if (theme.accent) root.style.setProperty('--accent', theme.accent);
+            if (theme.accentDark) root.style.setProperty('--accent-dark', theme.accentDark);
+            if (theme.primary && theme.accent) {
+                root.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%)`);
+            }
+        })();
+        </script>
+        <script src="js/shared.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/functions.js"></script>
+        <script src="js/tabs.js"></script>
+        <script src="js/sobre.js"></script>
+        <script src="js/script.js"></script>
 </body>
 </html>

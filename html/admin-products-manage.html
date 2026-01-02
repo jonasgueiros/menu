@@ -1,0 +1,20 @@
+<!-- Admin Products Management Page -->
+<section class="admin-products-manage">
+  <h2>🛠️ Gerenciar Produtos</h2>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <button class="add-product-btn" id="addProductBtn">+ Novo Produto</button>
+  </div>
+  <div class="search-filter-container">
+    <input type="text" class="search-input" id="productSearch" placeholder="🔍 Buscar produto por nome...">
+    <select class="filter-select" id="categoryFilter">
+      <option value="">Todas as categorias</option>
+      <option value="petiscos">Petiscos</option>
+      <option value="lanches">Lanches</option>
+      <option value="doces">Doces</option>
+      <option value="drinks">Bebidas</option>
+      <option value="combos">Combos</option>
+      <option value="promoção">Promoção</option>
+    </select>
+  </div>
+  <div class="products-management" id="productsManagement"></div>
+</section>

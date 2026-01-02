@@ -16,9 +16,7 @@
     z-index: 999;
 }
 
-.cart-bar.hidden {
-    display: none;
-}
+
 
 .cart-content {
     display: flex;
@@ -342,9 +340,10 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+
 @media (max-width: 768px) {
     .cart-bar {
-        display: none !important; /* Force hide the bar on mobile, even without hidden class */
+        display: none !important; /* Hide cart bar only on mobile */
     }
 
     .cart-fab {

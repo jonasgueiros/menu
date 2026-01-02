@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Menu Catalog</title>
-    <link rel="stylesheet" href="../theme.css">
-    <link rel="stylesheet" href="../css/base.css">
-    <link rel="stylesheet" href="../css/modals.css">
-    <link rel="stylesheet" href="../css/admin.css">
-    <link rel="stylesheet" href="../css/admin-products.css">
-    <link rel="stylesheet" href="../css/admin-about.css">
-    <link rel="stylesheet" href="../css/feedback.css">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/admin-products.css">
+    <link rel="stylesheet" href="css/admin-about.css">
+    <link rel="stylesheet" href="css/feedback.css">
     <style>
         body {
             overflow: hidden;
@@ -161,7 +161,7 @@
 <body>
     <div class="admin-header">
         <h1>👨‍🍳 Painel Administrativo</h1>
-        <a href="../index.html" class="back-link">← Voltar ao Menu</a>
+        <a href="index.html" class="back-link">← Voltar ao Menu</a>
     </div>
 
     <div class="admin-layout">
@@ -294,6 +294,11 @@
                     <!-- Feedback Page -->
                     <div class="admin-page" id="feedback-page">
                         <h2>💬 Feedback e Reclamações</h2>
+                        <div style="margin-bottom: 18px; display: flex; gap: 10px;">
+                            <button class="feedback-filter-btn active" id="filterAll" onclick="setFeedbackFilter('all')">Todos</button>
+                            <button class="feedback-filter-btn" id="filterRestaurante" onclick="setFeedbackFilter('restaurante')">🍽️ Restaurante</button>
+                            <button class="feedback-filter-btn" id="filterSistema" onclick="setFeedbackFilter('sistema')">💻 Sistema</button>
+                        </div>
                         <div class="feedback-list" id="feedbackList">
                             <p class="empty-state">Nenhum feedback registrado</p>
                         </div>
@@ -302,6 +307,29 @@
                     <div class="admin-page" id="about-page">
                         <h2>ℹ️ Sobre o Restaurante</h2>
                         <form id="aboutForm">
+                            <!-- Theme Color Section -->
+                            <fieldset>
+                                <legend>🎨 Cores do Tema</legend>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-bottom: 10px;">
+                                    <div class="form-group">
+                                        <label for="themePrimaryColor">Cor Primária<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Principal do sistema)</span></label>
+                                        <input type="color" id="themePrimaryColor" value="#667eea" style="width: 60px; height: 40px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="themeAccentColor">Cor de Destaque<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Accent)</span></label>
+                                        <input type="color" id="themeAccentColor" value="#764ba2" style="width: 60px; height: 40px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="themePrimaryHoverColor">Cor Primária Hover<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Cor ao passar o mouse)</span></label>
+                                        <input type="color" id="themePrimaryHoverColor" value="#5568d3" style="width: 60px; height: 40px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="themeAccentDarkColor">Cor de Destaque Escura<br><span style="font-size:0.9em; color:#888; font-weight:400;">(Accent Dark)</span></label>
+                                        <input type="color" id="themeAccentDarkColor" value="#6a4097" style="width: 60px; height: 40px;">
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-primary" id="saveThemeBtn" style="margin-top: 10px;">Salvar Tema</button>
+                            </fieldset>
                             <!-- Restaurant Info Section -->
                             <fieldset>
                                 <legend>🪧 Informações do Restaurante</legend>
@@ -494,10 +522,12 @@
         </div>
     </div>
 
-    <script src="../js/shared.js"></script>
-    <script src="../js/utils.js"></script>
-    <script src="../js/admin.js"></script>
-    <script src="../js/admin-products.js"></script>
-    <script src="../js/admin-about.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/functions.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-products.js"></script>
+    <script src="js/admin-about.js"></script>
+    <script src="js/feedback.js"></script>
 </body>
 </html>
